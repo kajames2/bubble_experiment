@@ -1,0 +1,5 @@
+if(EXISTS "/home/kajames/projects/asset_derivative/software/asset_tdd/build/tests_main[1]_tests.cmake")
+  include("/home/kajames/projects/asset_derivative/software/asset_tdd/build/tests_main[1]_tests.cmake")
+else()
+  add_test(tests_main_NOT_BUILT tests_main_NOT_BUILT)
+endif()
