@@ -74,14 +74,14 @@ TEST_F(AMarket, AsksReturnedFromLowestToHighest) {
   for (const auto& a : asks) {
     prices.push_back(a.price);
   }
-  ASSERT_THAT(prices, ElementsAre(LOW_P, HIGH_P));
+  ASSERT_THAT(prices, ElementsAre(-LOW_P, -HIGH_P));
 }
 
 TEST_F(AMarket, StandingAskIsLowest) {
   AddAsk(LOW_P);
   AddAsk(HIGH_P);
   auto ask = market_.GetStandingAsk();
-  ASSERT_THAT(ask.price, Eq(LOW_P));
+  ASSERT_THAT(ask.price, Eq(-LOW_P));
 }
 
 TEST_F(AMarket, MarketAssignsIDsWhenAdded) {
