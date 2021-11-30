@@ -9,25 +9,28 @@
 
 #include "clock.hh"
 #include "offer.hh"
+#include "offer_queue.hh"
+#include "trade.hh"
 
 class Market {
  public:
+  Market() = default;
+  Market(OfferQueue bids, OfferQueue asks);
   [[nodiscard]] auto IsEmpty() const -> bool;
-  [[nodiscard]] auto GetBids() const -> std::vector<Offer>;
-  [[nodiscard]] auto GetAsks() const -> std::vector<Offer>;
-  [[nodiscard]] auto GetStandingBid() const -> Offer;
-  [[nodiscard]] auto GetStandingAsk() const -> Offer;
-  auto AddBid(unsigned int player_id, unsigned int price) -> void;
-  auto AddAsk(unsigned int player_id, unsigned int price) -> void;
-  auto SetClock(std::shared_ptr<Clock> clock) -> void;
+  [[nodiscard]] auto Bids() const -> OfferQueue;
+  [[nodiscard]] auto Asks() const -> OfferQueue;
+  [[nodiscard]] auto StandingBid() const -> std::optional<Offer>;
+  [[nodiscard]] auto StandingAsk() const -> std::optional<Offer>;
+  [[nodiscard]] auto PeekPotentialTrade() const -> std::optional<Trade>;
+  [[nodiscard]] auto PopTrade() -> std::optional<Trade>;
+  auto ProcessOffer(Offer offer) -> std::optional<Trade>;
+  auto Retract(unsigned int id) -> void;
   auto clear() -> void;
+  auto AddOffer(Offer offer) -> void;
 
  private:
-  [[nodiscard]] auto GetUniqueID() -> unsigned int;
-  std::vector<Offer> bids_;
-  std::vector<Offer> asks_;
-  unsigned int next_id = 0;
-  std::shared_ptr<Clock> clock_;
+  OfferQueue bids_;
+  OfferQueue asks_;
 };
 
-#endif  // _MARKET_HH
+#endif  // MARKET_HH

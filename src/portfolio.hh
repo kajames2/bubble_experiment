@@ -7,29 +7,31 @@
 
 class InvalidChangeByZero : std::exception {};
 
+enum class Item { Cash, Shares };
+
 class Portfolio {
  public:
   bool IsEmpty() { return item_count_.empty(); }
-  void Add(const std::string& item, unsigned int n) {
-    Transact(item, static_cast<int>(n));
-  }
+  void Add(Item item, unsigned int n) { Transact(item, static_cast<int>(n)); }
 
-  void Subtract(const std::string& item, unsigned int n) {
+  void Subtract(Item item, unsigned int n) {
     Transact(item, -static_cast<int>(n));
   }
 
-  int ItemCount(const std::string& item) const {
+  int ItemCount(Item item) const {
     if (!item_count_.contains(item)) return 0;
     return item_count_.at(item);
   }
 
+  bool operator==(const Portfolio& rhs) const = default;
+
  private:
-  void Transact(const std::string& item, int change) {
+  void Transact(Item item, int change) {
     if (change == 0) throw InvalidChangeByZero();
     item_count_[item] = ItemCount(item) + change;
   }
 
-  std::unordered_map<std::string, int> item_count_;
+  std::unordered_map<Item, int> item_count_;
 };
 
 #endif  // PORTFOLIO_H_

@@ -1,0 +1,19 @@
+* First Release
+** Backend
+*** DONE Allow Bids/Asks
+    CLOSED: [2021-12-03 Fri 03:54]
+    - State "DONE"       from              [2021-12-03 Fri 03:54]
+*** DONE Allow Trades
+    CLOSED: [2021-12-03 Fri 03:54]
+    - State "DONE"       from              [2021-12-03 Fri 03:54]
+*** DONE Tracked portfolio for each subject.
+    CLOSED: [2021-12-03 Fri 03:54]
+    - State "DONE"       from              [2021-12-03 Fri 03:54]
+** Comms
+*** Can connect clients
+*** Can send bids & asks to and from client
+*** Can send current book to client.
+** UI
+*** Command line client can submit bids/asks
+*** Command line client can see current book.
+*** Command line client can see trade history.

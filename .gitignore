@@ -46,3 +46,4 @@ _deps
 bin/
 lib/
 .ccls-cache/
+build/

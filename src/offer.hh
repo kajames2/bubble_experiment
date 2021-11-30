@@ -1,22 +1,27 @@
 #ifndef OFFER_HH
 #define OFFER_HH
 
+#include <compare>
+#include <ostream>
 #include <tuple>
+
+class DifferentOffersWithSameID : std::exception {};
 
 struct Offer {
   unsigned int id;
   unsigned int player_id;
-  unsigned int price;
+  int price;
   unsigned int timestamp;
 
-  auto tie() const { return std::tie(price, timestamp); }
+  std::tuple<int, int> tie() const {
+    int neg_time = -static_cast<int>(timestamp);
+    return std::tuple(price, neg_time);
+  }
+
+  auto operator<=>(const Offer& other) const { return tie() <=> other.tie(); }
+  bool operator==(const Offer& other) const { return tie() == other.tie(); }
 };
 
-[[nodiscard]] auto operator==(const Offer& off1, const Offer& off2) -> bool;
-[[nodiscard]] auto operator<(const Offer& off1, const Offer& off2) -> bool;
-[[nodiscard]] auto operator>(const Offer& off1, const Offer& off2) -> bool;
-[[nodiscard]] auto operator<=(const Offer& off1, const Offer& off2) -> bool;
-[[nodiscard]] auto operator>=(const Offer& off1, const Offer& off2) -> bool;
-[[nodiscard]] auto operator!=(const Offer& off1, const Offer& off2) -> bool;
+std::ostream& operator<<(std::ostream& os, const Offer& offer);
 
 #endif  // OFFER_HH

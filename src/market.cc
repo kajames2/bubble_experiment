@@ -1,29 +1,27 @@
 #include "market.hh"
 
+#include <iostream>
+#include <optional>
+
+auto CanTrade(const OfferQueue& bids, const OfferQueue& asks) -> bool;
+
 auto Market::IsEmpty() const -> bool { return bids_.empty() && asks_.empty(); }
 
-auto Market::AddBid(unsigned int player_id, unsigned int price) -> void {
-  bids_.emplace_back(GetUniqueID(), player_id, price, clock_->Time());
-  std::ranges::sort(bids_, std::greater());
+auto Market::Bids() const -> OfferQueue { return bids_; }
+
+auto Market::StandingBid() const -> std::optional<Offer> {
+  return bids_.StandingOffer();
 }
 
-auto Market::GetBids() const -> std::vector<Offer> { return bids_; }
+auto Market::Asks() const -> OfferQueue { return asks_; }
 
-auto Market::GetStandingBid() const -> Offer {
-  return *std::ranges::max_element(bids_);
+auto Market::StandingAsk() const -> std::optional<Offer> {
+  return asks_.StandingOffer();
 }
 
-auto Market::GetStandingAsk() const -> Offer {
-  return *std::ranges::max_element(asks_);
-}
-
-auto Market::GetAsks() const -> std::vector<Offer> { return asks_; }
-
-auto Market::SetClock(std::shared_ptr<Clock> clock) -> void { clock_ = clock; }
-
-auto Market::AddAsk(unsigned int player_id, unsigned int price) -> void {
-  asks_.emplace_back(GetUniqueID(), player_id, -price, clock_->Time());
-  std::ranges::sort(asks_, std::greater());
+auto Market::Retract(unsigned int id) -> void {
+  bids_.Retract(id);
+  asks_.Retract(id);
 }
 
 auto Market::clear() -> void {
@@ -31,4 +29,45 @@ auto Market::clear() -> void {
   asks_.clear();
 }
 
-auto Market::GetUniqueID() -> unsigned int { return next_id++; }
+auto Market::PeekPotentialTrade() const -> std::optional<Trade> {
+  if (!CanTrade(bids_, asks_)) return std::nullopt;
+  Offer bid = *StandingBid();
+  Offer ask = *StandingAsk();
+  unsigned int timestamp = std::max(bid.timestamp, ask.timestamp);
+  unsigned int price = 0;
+  if (bid.timestamp > ask.timestamp) {
+    price = static_cast<unsigned int>(-ask.price);
+  } else {
+    price = static_cast<unsigned int>(bid.price);
+  }
+  Trade trade = {bid.player_id, ask.player_id, price,
+                 timestamp,     bid.id,        ask.id};
+  return {trade};
+}
+
+auto Market::PopTrade() -> std::optional<Trade> {
+  auto trade = PeekPotentialTrade();
+  if (trade) {
+    bids_.Retract(trade->bid_id);
+    asks_.Retract(trade->ask_id);
+  }
+  return trade;
+}
+
+auto Market::AddOffer(Offer offer) -> void {
+  if (offer.price < 0) {
+    asks_.push_back(offer);
+  } else {
+    bids_.push_back(offer);
+  }
+}
+
+auto Market::ProcessOffer(Offer offer) -> std::optional<Trade> {
+  AddOffer(offer);
+  return PopTrade();
+}
+
+auto CanTrade(const OfferQueue& bids, const OfferQueue& asks) -> bool {
+  if (bids.empty() || asks.empty()) return false;
+  return (bids.StandingOffer()->price + asks.StandingOffer()->price >= 0);
+}
