@@ -2,6 +2,7 @@
 #define OFFER_PROCESSOR_MARKET_HH
 
 #include "market.hh"
+#include "market_transaction.hh"
 #include "offer_processor.hh"
 #include "portfolio.hh"
 
@@ -11,11 +12,11 @@ class OfferProcessorMarket : public OfferProcessor {
  public:
   OfferProcessorMarket(Market market, std::shared_ptr<PortfolioSet>);
 
-  virtual auto ProcessOffer(Offer offer) -> void override;
+  virtual auto ProcessOffer(Offer offer) -> MarketSubmissionStatus override;
 
  private:
   Market market_;
-  std::shared_ptr<PortfolioSet> port_;
+  std::shared_ptr<PortfolioSet> folio_;
   auto ProcessTrade(const std::optional<Trade>& trade) -> void;
 };
 
