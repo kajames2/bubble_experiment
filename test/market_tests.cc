@@ -7,15 +7,6 @@
 
 using namespace ::testing;
 
-class MockClock : public Clock {
- public:
-  void SetTime(unsigned int time) { time_ = time; }
-  unsigned int Time() const override { return time_; }
-
- private:
-  unsigned int time_;
-};
-
 class AMarket : public Test {
  public:
   AMarket() {}
@@ -87,32 +78,6 @@ TEST_F(AMarket, StandingAskIsLowest) {
   auto ask = market_.StandingAsk();
   ASSERT_THAT(ask->price, Eq(-LOW_P));
 }
-
-// TEST_F(AMarket, MarketAssignsIDsWhenAdded) {
-//   AddAsk(LOW_P);
-//   AddAsk(HIGH_P);
-//   AddBid(LOW_P);
-//   AddBid(HIGH_P);
-//   auto bids = market_.Bids();
-//   auto asks = market_.Asks();
-//   std::set<unsigned int> ids;
-//   for (const auto& b : bids) {
-//     ids.insert(b.id);
-//   }
-//   for (const auto& a : asks) {
-//     ids.insert(a.id);
-//   }
-//   ASSERT_THAT(ids.size(), Eq(4));
-// }
-
-// TEST_F(AMarket, MarketTimeStampsWhenAdded) {
-//   clock_->SetTime(EARLY_T);
-//   AddBid(HIGH_P);
-//   clock_->SetTime(LATE_T);
-//   AddAsk(LOW_P);
-//   ASSERT_THAT(market_.StandingBid()->timestamp, Eq(EARLY_T));
-//   ASSERT_THAT(market_.StandingAsk()->timestamp, Eq(LATE_T));
-// }
 
 TEST_F(AMarket, RetractDoesNothingWhenNoMatch) {
   AddBid(HIGH_P);

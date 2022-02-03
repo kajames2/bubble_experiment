@@ -17,3 +17,10 @@
 *** Command line client can submit bids/asks
 *** Command line client can see current book.
 *** Command line client can see trade history.
+* TODO
+** Offer Processor
+   - Check for invalid player
+   - Check for enough shares
+   - Check for enough cash
+   - Check for trade with self
+   - Check for open market

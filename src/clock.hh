@@ -1,9 +1,11 @@
 #ifndef CLOCK_HH
 #define CLOCK_HH
 
+using Time = unsigned int;
+
 class Clock {
  public:
-  virtual unsigned int Time() const = 0;
+  virtual Time GetTime() const = 0;
   virtual ~Clock() {}
 };
 

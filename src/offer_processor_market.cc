@@ -4,9 +4,10 @@ OfferProcessorMarket::OfferProcessorMarket(Market market,
                                            std::shared_ptr<PortfolioSet> port)
     : market_(std::move(market)), folio_(port) {}
 
-auto OfferProcessorMarket::ProcessOffer(Offer offer) -> MarketSubmissionStatus {
+auto OfferProcessorMarket::ProcessOffer(Offer offer) -> MarketSubmissionResult {
   auto trade = market_.ProcessOffer(offer);
   ProcessTrade(trade);
+  return {MarketSubmissionStatus::Accepted, offer, trade};
 }
 
 auto OfferProcessorMarket::ProcessTrade(const std::optional<Trade>& trade)

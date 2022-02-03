@@ -29,11 +29,11 @@ class AnOfferProcessorMarket : public Test {
   }
 
   unsigned int next_id_ = 0;
-  auto ProcessBid(unsigned int pid, int price) -> void {
-    proc_.ProcessOffer(Offer(++next_id_, pid, price, EARLY_T));
+  auto ProcessBid(unsigned int pid, int price) -> MarketSubmissionResult {
+    return proc_.ProcessOffer(Offer{++next_id_, pid, price, EARLY_T});
   }
-  auto ProcessAsk(unsigned int pid, int price) -> void {
-    proc_.ProcessOffer(Offer(++next_id_, pid, -price, EARLY_T));
+  auto ProcessAsk(unsigned int pid, int price) -> MarketSubmissionResult {
+    return proc_.ProcessOffer(Offer{++next_id_, pid, -price, EARLY_T});
   }
 
   std::shared_ptr<PortfolioSet> folio_;
@@ -41,22 +41,41 @@ class AnOfferProcessorMarket : public Test {
 };
 
 TEST_F(AnOfferProcessorMarket, DoesNotModifyPortfolioOnNonTrade) {
-  ProcessBid(0, 200);
-  ProcessAsk(2, 300);
+  ProcessBid(0, LOW_P);
+  ProcessAsk(2, HIGH_P);
   PortfolioSet copy(*folio_);
   ASSERT_THAT(*folio_, Eq(copy));
 }
 
 TEST_F(AnOfferProcessorMarket, TransfersOneShareOnTrade) {
-  ProcessBid(0, 200);
-  ProcessAsk(2, 200);
-  ASSERT_THAT(folio_->at(0).ItemCount(Item::Shares), Eq(2));
-  ASSERT_THAT(folio_->at(2).ItemCount(Item::Shares), Eq(2));
+  auto sh0 = folio_->at(0).ItemCount(Item::Shares);
+  auto sh2 = folio_->at(2).ItemCount(Item::Shares);
+  ProcessBid(0, HIGH_P);
+  ProcessAsk(2, HIGH_P);
+  ASSERT_THAT(folio_->at(0).ItemCount(Item::Shares), Eq(sh0 + 1));
+  ASSERT_THAT(folio_->at(2).ItemCount(Item::Shares), Eq(sh2 - 1));
 }
 
 TEST_F(AnOfferProcessorMarket, TransfersCashPriceOnTrade) {
-  ProcessBid(0, 200);
-  ProcessAsk(2, 200);
-  ASSERT_THAT(folio_->at(0).ItemCount(Item::Cash), Eq(400));
-  ASSERT_THAT(folio_->at(2).ItemCount(Item::Cash), Eq(400));
+  auto cash0 = folio_->at(0).ItemCount(Item::Cash);
+  auto cash2 = folio_->at(2).ItemCount(Item::Cash);
+  ProcessBid(0, HIGH_P);
+  ProcessAsk(2, HIGH_P);
+  ASSERT_THAT(folio_->at(0).ItemCount(Item::Cash), Eq(cash0 - HIGH_P));
+  ASSERT_THAT(folio_->at(2).ItemCount(Item::Cash), Eq(cash2 + HIGH_P));
+}
+
+TEST_F(AnOfferProcessorMarket, ReturnsOfferAndStatusOnAcceptedOffer) {
+  auto res = ProcessBid(2, HIGH_P);
+  ASSERT_TRUE(res.offer);
+  ASSERT_THAT(res.status, Eq(MarketSubmissionStatus::Accepted));
+}
+
+TEST_F(AnOfferProcessorMarket, ReturnsTradeOnlyOnTrade) {
+  auto res1 = ProcessBid(2, LOW_P);
+  auto res2 = ProcessAsk(1, HIGH_P);
+  auto res3 = ProcessAsk(0, LOW_P);
+  ASSERT_FALSE(res1.trade);
+  ASSERT_FALSE(res2.trade);
+  ASSERT_TRUE(res3.trade);
 }

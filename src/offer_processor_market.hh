@@ -12,7 +12,7 @@ class OfferProcessorMarket : public OfferProcessor {
  public:
   OfferProcessorMarket(Market market, std::shared_ptr<PortfolioSet>);
 
-  virtual auto ProcessOffer(Offer offer) -> MarketSubmissionStatus override;
+  virtual auto ProcessOffer(Offer offer) -> MarketSubmissionResult override;
 
  private:
   Market market_;

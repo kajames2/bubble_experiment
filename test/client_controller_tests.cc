@@ -4,41 +4,70 @@
 #include "client_controller.hh"
 #include "offer.hh"
 #include "offer_processor.hh"
+#include "offer_test_consts.hh"
 #include "portfolio.hh"
 
 using namespace ::testing;
 
 class MockOfferProcessor : public OfferProcessor {
  public:
-  auto ProcessOffer(Offer offer) -> MarketSubmissionStatus override {
-    if (offer.player_id == 0)
-      return MarketSubmissionStatus::InvalidPlayer;
-    else
-      return MarketSubmissionStatus::Accepted;
+  auto ProcessOffer(Offer offer) -> MarketSubmissionResult override {
+    return {MarketSubmissionStatus::Accepted, offer, std::nullopt};
   }
+};
+
+class MockClock : public Clock {
+ public:
+  void SetTime(unsigned int time) { time_ = time; }
+  Time GetTime() const override { return time_; }
+
+ private:
+  unsigned int time_;
 };
 
 class AClientController : public Test {
  public:
   AClientController()
       : proc_(std::make_unique<MockOfferProcessor>()),
-        cont_(std::move(proc_)) {}
+        clock_(std::make_shared<MockClock>()),
+        cont_(std::move(proc_), clock_) {}
 
+  auto AddBid(unsigned int pid) -> MarketSubmissionResult {
+    return cont_.TakeBid(pid, LOW_P);
+  }
+  auto AddAsk(unsigned int pid) -> MarketSubmissionResult {
+    return cont_.TakeAsk(pid, LOW_P);
+  }
   std::unique_ptr<MockOfferProcessor> proc_;
+  std::shared_ptr<MockClock> clock_;
   ClientController cont_;
 };
 
-TEST_F(AClientController, TakeBidReturnsAcceptedCodeOnValidBid) {
-  MarketSubmissionResult res = cont_.TakeBid(2, 100);
-  ASSERT_THAT(res.status, Eq(MarketSubmissionStatus::Accepted));
+TEST_F(AClientController, TakeBidTimestampsOffer) {
+  clock_->SetTime(EARLY_T);
+  auto res = AddBid(VALID_PID);
+  ASSERT_THAT(res.offer->timestamp, Eq(EARLY_T));
 }
 
-TEST_F(AClientController, TakeBidReturnsSubmittedOfferOnValidBid) {
-  MarketSubmissionResult res = cont_.TakeBid(2, 100);
-  ASSERT_TRUE(res.offer);
+TEST_F(AClientController, TakeAskSubmittedOfferHasNegativePrice) {
+  auto res = cont_.TakeAsk(VALID_PID, LOW_P);
+  ASSERT_THAT(res.offer->price, Eq(-LOW_P));
 }
 
-TEST_F(AClientController, TakeBidDoesNotReturnOfferOnInvalidBid) {
-  MarketSubmissionResult res = cont_.TakeBid(0, 100);
-  ASSERT_FALSE(res.offer);
+TEST_F(AClientController, TakeAskTimestampsOffer) {
+  clock_->SetTime(EARLY_T);
+  auto res = AddAsk(VALID_PID);
+  ASSERT_THAT(res.offer->timestamp, Eq(EARLY_T));
+}
+
+TEST_F(AClientController, ControllerAssignsDifferentIDsWhenAdded) {
+  std::set<unsigned int> ids;
+  for (int i = 0; i < 3; ++i) {
+    auto res = AddBid(VALID_PID);
+    ids.insert(res.offer->id);
+
+    res = AddAsk(VALID_PID);
+    ids.insert(res.offer->id);
+  }
+  ASSERT_THAT(ids.size(), Eq(6));
 }
