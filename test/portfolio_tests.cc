@@ -4,6 +4,7 @@
 #include "portfolio.hh"
 
 using namespace ::testing;
+using namespace assetmarket;
 
 class APortfolio : public Test {
  public:

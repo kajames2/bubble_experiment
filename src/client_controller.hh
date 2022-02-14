@@ -7,6 +7,7 @@
 #include "offer.hh"
 #include "offer_processor.hh"
 
+namespace assetmarket {
 class ClientController {
  public:
   ClientController(std::unique_ptr<OfferProcessor> proc,
@@ -24,4 +25,5 @@ class ClientController {
   auto MakeOffer(unsigned int p_id, int price) -> Offer;
 };
 
+}  // namespace assetmarket
 #endif  // CLIENT_CONTROLLER_HH

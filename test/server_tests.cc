@@ -6,7 +6,7 @@
 
 using namespace ::testing;
 
-class MockConnection : public Connection {};
+// class MockConnection : public Connection {};
 
 class AServer : public Test {
  public:

@@ -5,6 +5,7 @@
 #include <ostream>
 #include <tuple>
 
+namespace assetmarket {
 class DifferentOffersWithSameID : std::exception {};
 
 struct Offer {
@@ -23,5 +24,5 @@ struct Offer {
 };
 
 std::ostream& operator<<(std::ostream& os, const Offer& offer);
-
+}  // namespace assetmarket
 #endif  // OFFER_HH

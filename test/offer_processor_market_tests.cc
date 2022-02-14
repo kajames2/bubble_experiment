@@ -6,6 +6,7 @@
 #include "portfolio.hh"
 
 using namespace ::testing;
+using namespace assetmarket;
 
 auto InitAllocations() -> std::shared_ptr<PortfolioSet> {
   auto folio = std::make_shared<PortfolioSet>();

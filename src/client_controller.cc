@@ -1,5 +1,6 @@
 #include "client_controller.hh"
 
+namespace assetmarket {
 ClientController::ClientController(std::unique_ptr<OfferProcessor> proc,
                                    std::shared_ptr<Clock> clock)
     : proc_(std::move(proc)), clock_(clock) {}
@@ -23,3 +24,4 @@ auto ClientController::TakeOffer(Offer offer) -> MarketSubmissionResult {
 auto ClientController::MakeOffer(unsigned int p_id, int price) -> Offer {
   return Offer{id++, p_id, price, clock_->GetTime()};
 }
+}  // namespace assetmarket

@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 
+namespace assetmarket {
 class InvalidChangeByZero : std::exception {};
 
 enum class Item { Cash, Shares };
@@ -33,5 +34,5 @@ class Portfolio {
 
   std::unordered_map<Item, int> item_count_;
 };
-
+}  // namespace assetmarket
 #endif  // PORTFOLIO_H_

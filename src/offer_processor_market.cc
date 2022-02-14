@@ -1,5 +1,6 @@
 #include "offer_processor_market.hh"
 
+namespace assetmarket {
 OfferProcessorMarket::OfferProcessorMarket(Market market,
                                            std::shared_ptr<PortfolioSet> port)
     : market_(std::move(market)), folio_(port) {}
@@ -19,3 +20,4 @@ auto OfferProcessorMarket::ProcessTrade(const std::optional<Trade>& trade)
     folio_->at(trade->seller).Add(Item::Cash, trade->price);
   }
 }
+}  // namespace assetmarket

@@ -5,6 +5,7 @@
 #include "offer_test_consts.hh"
 
 using namespace ::testing;
+using namespace assetmarket;
 
 class AnOffer : public Test {
  public:

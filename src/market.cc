@@ -3,6 +3,7 @@
 #include <iostream>
 #include <optional>
 
+namespace assetmarket {
 auto CanTrade(const OfferQueue& bids, const OfferQueue& asks) -> bool;
 
 auto Market::IsEmpty() const -> bool { return bids_.empty() && asks_.empty(); }
@@ -71,3 +72,4 @@ auto CanTrade(const OfferQueue& bids, const OfferQueue& asks) -> bool {
   if (bids.empty() || asks.empty()) return false;
   return (bids.StandingOffer()->price + asks.StandingOffer()->price >= 0);
 }
+}  // namespace assetmarket

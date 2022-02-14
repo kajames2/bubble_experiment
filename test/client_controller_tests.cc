@@ -2,12 +2,40 @@
 #include <gtest/gtest.h>
 
 #include "client_controller.hh"
+#include "message.hh"
 #include "offer.hh"
 #include "offer_processor.hh"
 #include "offer_test_consts.hh"
 #include "portfolio.hh"
 
 using namespace ::testing;
+using namespace assetmarket;
+
+// class SimpleMessageReceiver {
+//  public:
+//   auto Receive(std::string message) {
+//     messages_.push_back(Deserialize(message));
+//   }
+//   std::vector<std::unique_ptr<Message>> messages_;
+// };
+
+// class MockServer : public Server {
+//  public:
+//   MockServer(int n_players) : clients_() {
+//     for (int i = 0; i < n_players; ++i)
+//       clients_.push_back(SimpleMessageReceiver());
+//   }
+//   auto Send(int id, const Message& message) {
+//     clients_[id].Receive(message.Serialize());
+//   }
+//   auto SendAll(const Message& message) {
+//     auto ser_mess = message.Serialize();
+//     for (auto& client : clients_) {
+//       client.Receive(ser_mess);
+//     }
+//   }
+//   std::vector<SimpleMessageReceiver> clients_;
+// };
 
 class MockOfferProcessor : public OfferProcessor {
  public:
@@ -71,3 +99,5 @@ TEST_F(AClientController, ControllerAssignsDifferentIDsWhenAdded) {
   }
   ASSERT_THAT(ids.size(), Eq(6));
 }
+
+TEST_F(AClientController, ControllerInformsClientsOfSuccessfulOffer) {}

@@ -6,6 +6,7 @@
 
 #include "offer.hh"
 
+namespace assetmarket {
 class OfferQueue {
  public:
   void push_back(Offer offer);
@@ -29,5 +30,5 @@ class OfferQueue {
  private:
   std::vector<Offer> offers_;
 };
-
+}  // namespace assetmarket
 #endif  // OFFER_QUEUE_H

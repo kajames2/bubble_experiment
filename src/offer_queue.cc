@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+namespace assetmarket {
 void OfferQueue::push_back(Offer offer) {
   offers_.push_back(offer);
   std::ranges::sort(offers_);
@@ -22,3 +23,4 @@ std::vector<Offer> OfferQueue::Offers(unsigned int player_id) const {
 std::optional<Offer> OfferQueue::StandingOffer() const {
   return empty() ? std::nullopt : std::optional<Offer>(offers_.back());
 }
+}  // namespace assetmarket

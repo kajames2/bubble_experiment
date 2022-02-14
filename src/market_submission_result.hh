@@ -6,6 +6,7 @@
 #include "offer.hh"
 #include "trade.hh"
 
+namespace assetmarket {
 enum class MarketSubmissionStatus { Accepted, InvalidPlayer };
 
 struct MarketSubmissionResult {
@@ -13,5 +14,5 @@ struct MarketSubmissionResult {
   std::optional<Offer> offer;
   std::optional<Trade> trade;
 };
-
+}  // namespace assetmarket
 #endif  // MARKET_SUBMISSION_RESULT_HH

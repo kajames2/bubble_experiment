@@ -12,6 +12,7 @@
 #include "offer_queue.hh"
 #include "trade.hh"
 
+namespace assetmarket {
 class Market {
  public:
   Market() = default;
@@ -32,5 +33,5 @@ class Market {
   OfferQueue bids_;
   OfferQueue asks_;
 };
-
+}  // namespace assetmarket
 #endif  // MARKET_HH
