@@ -6,11 +6,13 @@
 #include "clock.hh"
 #include "offer.hh"
 #include "offer_processor.hh"
+#include "server.hh"
 
 namespace assetmarket {
 class ClientController {
  public:
   ClientController(std::unique_ptr<OfferProcessor> proc,
+                   std::shared_ptr<Server> server,
                    std::shared_ptr<Clock> clock);
 
   auto TakeBid(unsigned int p_id, int price) -> MarketSubmissionResult;
@@ -18,6 +20,7 @@ class ClientController {
 
  private:
   std::unique_ptr<OfferProcessor> proc_;
+  std::shared_ptr<Server> server_;
   std::shared_ptr<Clock> clock_;
   unsigned int id = 0;
 

@@ -5,8 +5,9 @@
 
 namespace assetmarket {
 class Message {
-  virtual auto Serialize() -> std::string = 0;
-
+ public:
+  virtual auto Serialize() const -> std::string = 0;
+  virtual auto Deserialize(std::string) -> void = 0;
   virtual ~Message(){};
 };
 }  // namespace assetmarket

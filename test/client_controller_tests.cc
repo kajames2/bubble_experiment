@@ -7,35 +7,34 @@
 #include "offer_processor.hh"
 #include "offer_test_consts.hh"
 #include "portfolio.hh"
+#include "server.hh"
 
 using namespace ::testing;
 using namespace assetmarket;
 
-// class SimpleMessageReceiver {
-//  public:
-//   auto Receive(std::string message) {
-//     messages_.push_back(Deserialize(message));
-//   }
-//   std::vector<std::unique_ptr<Message>> messages_;
-// };
+class SimpleMessageReceiver {
+ public:
+  auto Receive(const assetmarket::Message&) { n_messages_ += 1; }
+  int n_messages_ = 0;
+};
 
-// class MockServer : public Server {
-//  public:
-//   MockServer(int n_players) : clients_() {
-//     for (int i = 0; i < n_players; ++i)
-//       clients_.push_back(SimpleMessageReceiver());
-//   }
-//   auto Send(int id, const Message& message) {
-//     clients_[id].Receive(message.Serialize());
-//   }
-//   auto SendAll(const Message& message) {
-//     auto ser_mess = message.Serialize();
-//     for (auto& client : clients_) {
-//       client.Receive(ser_mess);
-//     }
-//   }
-//   std::vector<SimpleMessageReceiver> clients_;
-// };
+class MockServer : public Server {
+ public:
+  MockServer(int n_players) : clients_() {
+    for (int i = 0; i < n_players; ++i)
+      clients_.push_back(SimpleMessageReceiver());
+  }
+  virtual auto Send(size_t id, const assetmarket::Message& message)
+      -> void override {
+    clients_[id].Receive(message);
+  }
+  virtual auto SendAll(const assetmarket::Message& message) -> void override {
+    for (auto& client : clients_) {
+      client.Receive(message);
+    }
+  }
+  std::vector<SimpleMessageReceiver> clients_;
+};
 
 class MockOfferProcessor : public OfferProcessor {
  public:
@@ -58,7 +57,8 @@ class AClientController : public Test {
   AClientController()
       : proc_(std::make_unique<MockOfferProcessor>()),
         clock_(std::make_shared<MockClock>()),
-        cont_(std::move(proc_), clock_) {}
+        serv_(std::make_shared<MockServer>(10)),
+        cont_(std::move(proc_), serv_, clock_) {}
 
   auto AddBid(unsigned int pid) -> MarketSubmissionResult {
     return cont_.TakeBid(pid, LOW_P);
@@ -68,6 +68,7 @@ class AClientController : public Test {
   }
   std::unique_ptr<MockOfferProcessor> proc_;
   std::shared_ptr<MockClock> clock_;
+  std::shared_ptr<MockServer> serv_;
   ClientController cont_;
 };
 
@@ -100,4 +101,9 @@ TEST_F(AClientController, ControllerAssignsDifferentIDsWhenAdded) {
   ASSERT_THAT(ids.size(), Eq(6));
 }
 
-TEST_F(AClientController, ControllerInformsClientsOfSuccessfulOffer) {}
+TEST_F(AClientController, ControllerTellsClientsOnSuccessfulOffer) {
+  cont_.TakeAsk(VALID_PID, LOW_P);
+  for (const auto& client : serv_->clients_) {
+    ASSERT_THAT(client.n_messages_, Eq(1));
+  }
+}
