@@ -40,9 +40,13 @@ Testing
 Makefile
 install_manifest.txt
 compile_commands.json
+*.~undo-tree~
 _deps
+.#*
+package*.json
 
 bin/
 lib/
+.cache/
 .ccls-cache/
 build/

@@ -8,6 +8,8 @@
 #include "offer_test_consts.hh"
 #include "portfolio.hh"
 #include "server.hh"
+#include <vector>
+#include <set>
 
 using namespace ::testing;
 using namespace assetmarket;

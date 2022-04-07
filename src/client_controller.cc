@@ -1,6 +1,6 @@
 #include "client_controller.hh"
 
-#include "serializable_market_submission_result.hh"
+#include "market_submission_result_message.hh"
 
 namespace assetmarket {
 ClientController::ClientController(std::unique_ptr<OfferProcessor> proc,
@@ -22,8 +22,7 @@ auto ClientController::TakeAsk(unsigned int p_id, int price)
 
 auto ClientController::TakeOffer(Offer offer) -> MarketSubmissionResult {
   auto res = proc_->ProcessOffer(offer);
-  SerializableMarketSubmissionResult ser_res;
-  server_->SendAll(ser_res);
+  server_->SendAll(MarketSubmissionResultMessage(res));
   return res;
 }
 
