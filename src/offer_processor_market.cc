@@ -8,7 +8,7 @@ OfferProcessorMarket::OfferProcessorMarket(Market market,
 auto OfferProcessorMarket::ProcessOffer(Offer offer) -> MarketSubmissionResult {
   auto trade = market_.ProcessOffer(offer);
   ProcessTrade(trade);
-  return {MarketSubmissionStatus::Accepted, offer, trade};
+  return {offer, trade};
 }
 
 auto OfferProcessorMarket::ProcessTrade(const std::optional<Trade>& trade)

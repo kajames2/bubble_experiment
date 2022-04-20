@@ -1,6 +1,7 @@
 #ifndef SERVER_HH
 #define SERVER_HH
 
+#include "client_message_processor.hh"
 #include "message.hh"
 
 namespace assetmarket {

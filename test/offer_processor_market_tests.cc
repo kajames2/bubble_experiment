@@ -66,12 +66,6 @@ TEST_F(AnOfferProcessorMarket, TransfersCashPriceOnTrade) {
   ASSERT_THAT(folio_->at(2).ItemCount(Item::Cash), Eq(cash2 + HIGH_P));
 }
 
-TEST_F(AnOfferProcessorMarket, ReturnsOfferAndStatusOnAcceptedOffer) {
-  auto res = ProcessBid(2, HIGH_P);
-  ASSERT_TRUE(res.offer);
-  ASSERT_THAT(res.status, Eq(MarketSubmissionStatus::Accepted));
-}
-
 TEST_F(AnOfferProcessorMarket, ReturnsTradeOnlyOnTrade) {
   auto res1 = ProcessBid(2, LOW_P);
   auto res2 = ProcessAsk(1, HIGH_P);

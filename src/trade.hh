@@ -11,6 +11,12 @@ struct Trade {
   unsigned int timestamp;
   unsigned int bid_id;
   unsigned int ask_id;
+
+  auto operator<=>(const Trade&) const = default;
 };
+
+std::ostream& operator<<(std::ostream& os, Trade trade);
+std::istream& operator>>(std::istream& is, Trade& trade);
+
 }  // namespace assetmarket
 #endif  // TRADE_HH

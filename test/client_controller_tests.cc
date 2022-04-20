@@ -1,6 +1,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <set>
+#include <vector>
+
 #include "client_controller.hh"
 #include "message.hh"
 #include "offer.hh"
@@ -8,40 +11,31 @@
 #include "offer_test_consts.hh"
 #include "portfolio.hh"
 #include "server.hh"
-#include <vector>
-#include <set>
 
 using namespace ::testing;
 using namespace assetmarket;
 
-class SimpleMessageReceiver {
- public:
-  auto Receive(const assetmarket::Message&) { n_messages_ += 1; }
-  int n_messages_ = 0;
-};
-
 class MockServer : public Server {
  public:
-  MockServer(int n_players) : clients_() {
-    for (int i = 0; i < n_players; ++i)
-      clients_.push_back(SimpleMessageReceiver());
+  MockServer(int n_players) : counts_() {
+    for (int i = 0; i < n_players; ++i) counts_.push_back(0);
   }
   virtual auto Send(size_t id, const assetmarket::Message& message)
       -> void override {
-    clients_[id].Receive(message);
+    counts_[id] += 1;
   }
   virtual auto SendAll(const assetmarket::Message& message) -> void override {
-    for (auto& client : clients_) {
-      client.Receive(message);
+    for (auto& count : counts_) {
+      count += 1;
     }
   }
-  std::vector<SimpleMessageReceiver> clients_;
+  std::vector<int> counts_;
 };
 
 class MockOfferProcessor : public OfferProcessor {
  public:
   auto ProcessOffer(Offer offer) -> MarketSubmissionResult override {
-    return {MarketSubmissionStatus::Accepted, offer, std::nullopt};
+    return {offer, std::nullopt};
   }
 };
 
@@ -77,35 +71,35 @@ class AClientController : public Test {
 TEST_F(AClientController, TakeBidTimestampsOffer) {
   clock_->SetTime(EARLY_T);
   auto res = AddBid(VALID_PID);
-  ASSERT_THAT(res.offer->timestamp, Eq(EARLY_T));
+  ASSERT_THAT(res.offer.timestamp, Eq(EARLY_T));
 }
 
 TEST_F(AClientController, TakeAskSubmittedOfferHasNegativePrice) {
   auto res = cont_.TakeAsk(VALID_PID, LOW_P);
-  ASSERT_THAT(res.offer->price, Eq(-LOW_P));
+  ASSERT_THAT(res.offer.price, Eq(-LOW_P));
 }
 
 TEST_F(AClientController, TakeAskTimestampsOffer) {
   clock_->SetTime(EARLY_T);
   auto res = AddAsk(VALID_PID);
-  ASSERT_THAT(res.offer->timestamp, Eq(EARLY_T));
+  ASSERT_THAT(res.offer.timestamp, Eq(EARLY_T));
 }
 
 TEST_F(AClientController, ControllerAssignsDifferentIDsWhenAdded) {
   std::set<unsigned int> ids;
   for (int i = 0; i < 3; ++i) {
     auto res = AddBid(VALID_PID);
-    ids.insert(res.offer->id);
+    ids.insert(res.offer.id);
 
     res = AddAsk(VALID_PID);
-    ids.insert(res.offer->id);
+    ids.insert(res.offer.id);
   }
   ASSERT_THAT(ids.size(), Eq(6));
 }
 
 TEST_F(AClientController, ControllerTellsClientsOnSuccessfulOffer) {
   cont_.TakeAsk(VALID_PID, LOW_P);
-  for (const auto& client : serv_->clients_) {
-    ASSERT_THAT(client.n_messages_, Eq(1));
+  for (const auto& count : serv_->counts_) {
+    ASSERT_THAT(count, Eq(1));
   }
 }

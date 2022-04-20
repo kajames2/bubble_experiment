@@ -24,5 +24,6 @@ struct Offer {
 };
 
 std::ostream& operator<<(std::ostream& os, const Offer& offer);
-}  // namespace assetmarket
+std::istream& operator>>(std::istream& is, Offer& offer);
+};      // namespace assetmarket
 #endif  // OFFER_HH
