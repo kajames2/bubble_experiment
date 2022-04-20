@@ -31,6 +31,8 @@
 *.out
 *.app
 
+.clang-format
+.clang_complete
 *.cmake
 CMakeLists.txt.user
 CMakeCache.txt
@@ -44,6 +46,7 @@ compile_commands.json
 _deps
 .#*
 package*.json
+todo.org
 
 bin/
 lib/
