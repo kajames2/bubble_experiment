@@ -9,6 +9,7 @@
 
 using namespace ::testing;
 using namespace assetmarket;
+using namespace assettest;
 
 class AMarketSubmissionResult : public Test {
  public:

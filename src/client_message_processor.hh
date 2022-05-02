@@ -13,7 +13,7 @@ struct ClientMessage {
 
 class ClientMessageProcessor {
  public:
-  virtual auto ProcessMessage(int id, Message message) -> void = 0;
+  virtual auto ProcessMessage(size_t id, Message message) -> void = 0;
   virtual ~ClientMessageProcessor() {}
 };
 

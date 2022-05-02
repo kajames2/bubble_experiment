@@ -1,10 +1,12 @@
 #ifndef ASIO_SERVER_HH
 #define ASIO_SERVER_HH
 
-#include <iostream>
 #include <vector>
 
+#ifndef ASIO_STANDALONE
 #define ASIO_STANDALONE
+#endif
+
 #include <asio.hpp>
 #include <asio/ts/buffer.hpp>
 #include <asio/ts/internet.hpp>
@@ -20,78 +22,39 @@ namespace assetmarket {
 // raw.githubusercontent.com/OneLoneCoder/olcPixelGameEngine/master/Videos/Networking
 class AsioServer : public Server {
  public:
-  AsioServer(uint16_t port, std::shared_ptr<ClientMessageProcessor> proc)
-      : processor_(proc),
-        m_asioAcceptor(contex_,
-                       asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {}
-
+  AsioServer(uint16_t port);
   virtual ~AsioServer() { Stop(); }
 
-  bool Start() {
-    try {
-      WaitForClientConnection();
-      m_threadContext = std::thread([this]() { contex_.run(); });
-    } catch (std::exception& e) {
-      std::cerr << "[SERVER] Exception: " << e.what() << "\n";
-      return false;
+  auto Start() -> bool;
+  auto Stop() -> void;
+
+  auto AddConnection(std::shared_ptr<Connection> conn) -> void;
+  auto StartAcceptingClients() -> void { accepting_clients_ = true; }
+  auto StopAcceptingClients() -> void { accepting_clients_ = false; }
+
+  auto Send(size_t id, const Message& message) -> void override;
+  auto SendAll(const Message& message) -> void override;
+  auto AddProcessor(std::shared_ptr<ClientMessageProcessor> proc) -> void;
+  auto ProcessMessage(size_t id, Message message) -> void;
+  auto AddClient(SubjectID id, const ConnectionInfo& conn) -> void {}
+
+  std::vector<Connection*> GetConnections() {
+    std::vector<Connection*> conns;
+    for (auto& con : connections_) {
+      conns.push_back(con.get());
     }
-    std::cout << "[SERVER] Started!\n";
-    return true;
-  }
-
-  auto Send(size_t id, const Message& message) -> void override {
-    clients_[id]->Send(message);
-  };
-
-  auto SendAll(const Message& message) -> void override {
-    for (auto& client : clients_) {
-      client->Send(message);
-    }
-  };
-  auto AddConnection(std::shared_ptr<Connection> conn) -> void {
-    clients_.push_back(conn);
-  }
-
-  auto ProcessMessage(int id, Message message) -> void {
-    processor_->ProcessMessage(id, message);
-  }
-
-  void Stop() {
-    contex_.stop();
-    if (m_threadContext.joinable()) m_threadContext.join();
-    std::cout << "[SERVER] Stopped!\n";
-  }
-
-  void WaitForClientConnection() {
-    m_asioAcceptor.async_accept([this](std::error_code ec,
-                                       asio::ip::tcp::socket socket) {
-      if (!ec) {
-        std::cout << "[SERVER] New Connection: " << socket.remote_endpoint()
-                  << "\n";
-
-        int id = clients_.size();
-        std::shared_ptr<AsioConnection> newconn =
-            std::make_shared<AsioConnection>(
-                contex_, std::move(socket),
-                [this, id](Message message) { ProcessMessage(id, message); },
-                [this, id](asio::error_code ec) {
-                  std::cerr << "[SERVER] Connection Error " << id << ": "
-                            << ec.message() << "\n";
-                });
-        clients_.push_back(newconn);
-        newconn->ConnectToClient();
-      } else {
-        std::cout << "[SERVER] New Connection Error: " << ec.message() << "\n";
-      }
-
-      WaitForClientConnection();
-    });
+    return conns;
   }
 
  private:
-  std::vector<std::shared_ptr<Connection>> clients_;
-  std::shared_ptr<ClientMessageProcessor> processor_;
-  asio::io_context contex_;
+  auto WaitForClientConnection() -> void;
+  auto MakeConnection(asio::ip::tcp::socket socket)
+      -> std::unique_ptr<AsioConnection>;
+
+  bool accepting_clients_ = true;
+  std::vector<std::shared_ptr<Connection>> connections_;
+  std::vector<std::shared_ptr<ClientMessageProcessor>> processors_;
+  asio::io_context context_;
   std::thread m_threadContext;
   asio::ip::tcp::acceptor m_asioAcceptor;
   uint32_t nIDCounter = 10000;

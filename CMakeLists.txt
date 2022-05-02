@@ -19,7 +19,7 @@ project(asset)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-include_directories(${PROJECT_SOURCE_DIR}/lib/asio-1.22.1/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/lib/asio-1.22.1/include)
 
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

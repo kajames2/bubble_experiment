@@ -7,7 +7,7 @@
 using namespace assetmarket;
 
 class MockMessageProcessor : public ClientMessageProcessor {
-  auto ProcessMessage(int id, Message message) -> void override {
+  auto ProcessMessage(size_t id, Message message) -> void override {
     std::cout << id << " " << message.header_ << " " << message.body_ << "\n";
   }
 };
@@ -19,7 +19,8 @@ int main(int argc, char **argv) {
   }
 
   auto proc = std::make_shared<MockMessageProcessor>();
-  AsioServer server(12345, proc);
+  AsioServer server(12345);
+  server.AddProcessor(proc);
   server.Start();
 
   while (true) {
@@ -31,6 +32,8 @@ int main(int argc, char **argv) {
       assetmarket::Message mess(MessageType::DebugMessage,
                                 "Test Message from Server");
       server.SendAll(mess);
+    } else if (command == "stop") {
+      server.Stop();
     } else {
       std::cout << "Invalid command" << std::endl;
     }

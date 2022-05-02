@@ -6,6 +6,7 @@
 
 using namespace ::testing;
 using namespace assetmarket;
+using namespace assettest;
 
 class AnOffer : public Test {
  public:

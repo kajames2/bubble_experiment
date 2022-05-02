@@ -12,10 +12,10 @@ struct Offer {
   unsigned int id;
   unsigned int player_id;
   int price;
-  unsigned int timestamp;
+  unsigned int time_elapsed;
 
   std::tuple<int, int> tie() const {
-    int neg_time = -static_cast<int>(timestamp);
+    int neg_time = -static_cast<int>(time_elapsed);
     return std::tuple(price, neg_time);
   }
 

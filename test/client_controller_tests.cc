@@ -1,51 +1,23 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <set>
-#include <vector>
-
 #include "client_controller.hh"
-#include "message.hh"
+#include "mock_clock.hh"
+#include "mock_server.hh"
 #include "offer.hh"
 #include "offer_processor.hh"
 #include "offer_test_consts.hh"
-#include "portfolio.hh"
-#include "server.hh"
+#include <set>
 
 using namespace ::testing;
 using namespace assetmarket;
-
-class MockServer : public Server {
- public:
-  MockServer(int n_players) : counts_() {
-    for (int i = 0; i < n_players; ++i) counts_.push_back(0);
-  }
-  virtual auto Send(size_t id, const assetmarket::Message& message)
-      -> void override {
-    counts_[id] += 1;
-  }
-  virtual auto SendAll(const assetmarket::Message& message) -> void override {
-    for (auto& count : counts_) {
-      count += 1;
-    }
-  }
-  std::vector<int> counts_;
-};
+using namespace assettest;
 
 class MockOfferProcessor : public OfferProcessor {
  public:
   auto ProcessOffer(Offer offer) -> MarketSubmissionResult override {
     return {offer, std::nullopt};
   }
-};
-
-class MockClock : public Clock {
- public:
-  void SetTime(unsigned int time) { time_ = time; }
-  Time GetTime() const override { return time_; }
-
- private:
-  unsigned int time_;
 };
 
 class AClientController : public Test {
@@ -71,7 +43,7 @@ class AClientController : public Test {
 TEST_F(AClientController, TakeBidTimestampsOffer) {
   clock_->SetTime(EARLY_T);
   auto res = AddBid(VALID_PID);
-  ASSERT_THAT(res.offer.timestamp, Eq(EARLY_T));
+  ASSERT_THAT(res.offer.time_elapsed, Eq(EARLY_T));
 }
 
 TEST_F(AClientController, TakeAskSubmittedOfferHasNegativePrice) {
@@ -82,7 +54,7 @@ TEST_F(AClientController, TakeAskSubmittedOfferHasNegativePrice) {
 TEST_F(AClientController, TakeAskTimestampsOffer) {
   clock_->SetTime(EARLY_T);
   auto res = AddAsk(VALID_PID);
-  ASSERT_THAT(res.offer.timestamp, Eq(EARLY_T));
+  ASSERT_THAT(res.offer.time_elapsed, Eq(EARLY_T));
 }
 
 TEST_F(AClientController, ControllerAssignsDifferentIDsWhenAdded) {
@@ -99,7 +71,7 @@ TEST_F(AClientController, ControllerAssignsDifferentIDsWhenAdded) {
 
 TEST_F(AClientController, ControllerTellsClientsOnSuccessfulOffer) {
   cont_.TakeAsk(VALID_PID, LOW_P);
-  for (const auto& count : serv_->counts_) {
+  for (const auto& [key, count] : serv_->counts_) {
     ASSERT_THAT(count, Eq(1));
   }
 }

@@ -24,6 +24,8 @@ class ClientController {
   std::shared_ptr<Clock> clock_;
   unsigned int id = 0;
 
+  auto SendMessage(Message mess, std::optional<size_t> player_id = std::nullopt)
+      -> void;
   auto TakeOffer(Offer offer) -> MarketSubmissionResult;
   auto MakeOffer(unsigned int p_id, int price) -> Offer;
 };

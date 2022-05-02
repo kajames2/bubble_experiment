@@ -14,10 +14,10 @@ auto OfferProcessorMarket::ProcessOffer(Offer offer) -> MarketSubmissionResult {
 auto OfferProcessorMarket::ProcessTrade(const std::optional<Trade>& trade)
     -> void {
   if (trade) {
-    folio_->at(trade->buyer).Add(Item::Shares, 1);
-    folio_->at(trade->seller).Subtract(Item::Shares, 1);
-    folio_->at(trade->buyer).Subtract(Item::Cash, trade->price);
-    folio_->at(trade->seller).Add(Item::Cash, trade->price);
+    (*folio_)[trade->buyer].Add(Item::Shares, 1);
+    (*folio_)[trade->seller].Subtract(Item::Shares, 1);
+    (*folio_)[trade->buyer].Subtract(Item::Cash, trade->price);
+    (*folio_)[trade->seller].Add(Item::Cash, trade->price);
   }
 }
 }  // namespace assetmarket

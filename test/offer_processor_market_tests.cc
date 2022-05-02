@@ -1,26 +1,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "configuration_consts.hh"
 #include "offer_processor_market.hh"
 #include "offer_test_consts.hh"
 #include "portfolio.hh"
 
 using namespace ::testing;
 using namespace assetmarket;
-
-auto InitAllocations() -> std::shared_ptr<PortfolioSet> {
-  auto folio = std::make_shared<PortfolioSet>();
-  for (unsigned int i = 0; i < 3; ++i) {
-    folio->try_emplace(i, Portfolio());
-  }
-  folio->at(0).Add(Item::Cash, 600);
-  folio->at(0).Add(Item::Shares, 1);
-  folio->at(1).Add(Item::Cash, 400);
-  folio->at(1).Add(Item::Shares, 2);
-  folio->at(2).Add(Item::Cash, 200);
-  folio->at(2).Add(Item::Shares, 3);
-  return folio;
-}
+using namespace assettest;
 
 class AnOfferProcessorMarket : public Test {
  public:
@@ -49,21 +37,21 @@ TEST_F(AnOfferProcessorMarket, DoesNotModifyPortfolioOnNonTrade) {
 }
 
 TEST_F(AnOfferProcessorMarket, TransfersOneShareOnTrade) {
-  auto sh0 = folio_->at(0).ItemCount(Item::Shares);
-  auto sh2 = folio_->at(2).ItemCount(Item::Shares);
+  auto sh0 = (*folio_)[0].ItemCount(Item::Shares);
+  auto sh2 = (*folio_)[2].ItemCount(Item::Shares);
   ProcessBid(0, HIGH_P);
   ProcessAsk(2, HIGH_P);
-  ASSERT_THAT(folio_->at(0).ItemCount(Item::Shares), Eq(sh0 + 1));
-  ASSERT_THAT(folio_->at(2).ItemCount(Item::Shares), Eq(sh2 - 1));
+  ASSERT_THAT((*folio_)[0].ItemCount(Item::Shares), Eq(sh0 + 1));
+  ASSERT_THAT((*folio_)[2].ItemCount(Item::Shares), Eq(sh2 - 1));
 }
 
 TEST_F(AnOfferProcessorMarket, TransfersCashPriceOnTrade) {
-  auto cash0 = folio_->at(0).ItemCount(Item::Cash);
-  auto cash2 = folio_->at(2).ItemCount(Item::Cash);
+  auto cash0 = (*folio_)[0].ItemCount(Item::Cash);
+  auto cash2 = (*folio_)[2].ItemCount(Item::Cash);
   ProcessBid(0, HIGH_P);
   ProcessAsk(2, HIGH_P);
-  ASSERT_THAT(folio_->at(0).ItemCount(Item::Cash), Eq(cash0 - HIGH_P));
-  ASSERT_THAT(folio_->at(2).ItemCount(Item::Cash), Eq(cash2 + HIGH_P));
+  ASSERT_THAT((*folio_)[0].ItemCount(Item::Cash), Eq(cash0 - HIGH_P));
+  ASSERT_THAT((*folio_)[2].ItemCount(Item::Cash), Eq(cash2 + HIGH_P));
 }
 
 TEST_F(AnOfferProcessorMarket, ReturnsTradeOnlyOnTrade) {

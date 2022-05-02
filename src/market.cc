@@ -1,7 +1,7 @@
 #include "market.hh"
 
-#include <iostream>
 #include <optional>
+#include <algorithm>
 
 namespace assetmarket {
 auto CanTrade(const OfferQueue& bids, const OfferQueue& asks) -> bool;
@@ -34,15 +34,15 @@ auto Market::PeekPotentialTrade() const -> std::optional<Trade> {
   if (!CanTrade(bids_, asks_)) return std::nullopt;
   Offer bid = *StandingBid();
   Offer ask = *StandingAsk();
-  unsigned int timestamp = std::max(bid.timestamp, ask.timestamp);
+  unsigned int time_elapsed = std::max(bid.time_elapsed, ask.time_elapsed);
   unsigned int price = 0;
-  if (bid.timestamp > ask.timestamp) {
+  if (bid.time_elapsed > ask.time_elapsed) {
     price = static_cast<unsigned int>(-ask.price);
   } else {
     price = static_cast<unsigned int>(bid.price);
   }
   Trade trade = {bid.player_id, ask.player_id, price,
-                 timestamp,     bid.id,        ask.id};
+                 time_elapsed,  bid.id,        ask.id};
   return {trade};
 }
 

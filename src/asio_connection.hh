@@ -1,6 +1,9 @@
 #ifndef ASIO_CONNECTION_HH
 #define ASIO_CONNECTION_HH
 
+#include <asio.hpp>
+#include <asio/ts/buffer.hpp>
+#include <asio/ts/internet.hpp>
 #include <deque>
 
 #include "connection.hh"
@@ -12,28 +15,33 @@
 namespace assetmarket {
 class AsioConnection : public Connection {
  public:
-  AsioConnection(asio::io_context& context, asio::ip::tcp::socket socket,
-                 std::function<void(Message)> do_handle_message,
-                 std::function<void(asio::error_code)> do_handle_error)
+  AsioConnection(
+      asio::io_context& context, asio::ip::tcp::socket socket,
+      std::function<void(Message)> do_handle_message,
+      std::function<void(std::error_code)> do_handle_error =
+          [](std::error_code) {},
+      std::function<void(std::error_code)> do_handle_connection =
+          [](std::error_code) {})
       : context_(context),
         socket_(std::move(socket)),
         do_handle_message_(do_handle_message),
-        do_handle_error_(do_handle_error) {}
+        do_handle_error_(do_handle_error),
+        do_handle_connection_(do_handle_connection) {}
 
-  void ConnectToClient(uint32_t uid = 0) {
+  void ConnectToClient() {
     if (socket_.is_open()) {
       ReadHeader();
     }
   }
 
   void ConnectToServer(const asio::ip::tcp::resolver::results_type& endpoints) {
-    asio::async_connect(
-        socket_, endpoints,
-        [this](std::error_code ec, asio::ip::tcp::endpoint endpoint) {
-          if (!ec) {
-            ReadHeader();
-          }
-        });
+    asio::async_connect(socket_, endpoints,
+                        [this](std::error_code ec, asio::ip::tcp::endpoint) {
+                          do_handle_connection_(ec);
+                          if (!ec) {
+                            ReadHeader();
+                          }
+                        });
   }
 
   void Disconnect() {
@@ -57,7 +65,7 @@ class AsioConnection : public Connection {
     asio::async_write(
         socket_,
         asio::buffer(&m_qMessagesOut.front().header_, sizeof(MessageHeader)),
-        [this](std::error_code ec, std::size_t length) {
+        [this](std::error_code ec, std::size_t) {
           if (!ec) {
             if (m_qMessagesOut.front().header_.size > 0) {
               WriteBody();
@@ -78,7 +86,7 @@ class AsioConnection : public Connection {
     asio::async_write(socket_,
                       asio::buffer(m_qMessagesOut.front().body_.data(),
                                    m_qMessagesOut.front().header_.size),
-                      [this](std::error_code ec, std::size_t length) {
+                      [this](std::error_code ec, std::size_t) {
                         if (!ec) {
                           m_qMessagesOut.pop_front();
                           if (!m_qMessagesOut.empty()) {
@@ -94,13 +102,14 @@ class AsioConnection : public Connection {
   void ReadHeader() {
     asio::async_read(
         socket_, asio::buffer(&m_msgTemporaryIn.header_, sizeof(MessageHeader)),
-        [this](std::error_code ec, std::size_t length) {
+        [this](std::error_code ec, std::size_t) {
           if (!ec) {
             if (m_msgTemporaryIn.header_.size > 0) {
               m_msgTemporaryIn.body_.resize(m_msgTemporaryIn.header_.size);
               ReadBody();
             } else {
               do_handle_message_(m_msgTemporaryIn);
+              ReadHeader();
             }
           } else {
             do_handle_error_(ec);
@@ -113,7 +122,7 @@ class AsioConnection : public Connection {
     asio::async_read(socket_,
                      asio::buffer(m_msgTemporaryIn.body_.data(),
                                   m_msgTemporaryIn.body_.size()),
-                     [this](std::error_code ec, std::size_t length) {
+                     [this](std::error_code ec, std::size_t) {
                        if (!ec) {
                          do_handle_message_(m_msgTemporaryIn);
                          ReadHeader();
@@ -125,13 +134,15 @@ class AsioConnection : public Connection {
   }
 
  protected:
-  asio::ip::tcp::socket socket_;
   asio::io_context& context_;
+  asio::ip::tcp::socket socket_;
+  std::function<void(Message)> do_handle_message_;
+  std::function<void(std::error_code)> do_handle_error_;
+  std::function<void(std::error_code)> do_handle_connection_;
+
   Message m_msgTemporaryIn;
   std::deque<Message> m_qMessagesOut;
   bool m_bConnectionEstablished = false;
-  std::function<void(Message)> do_handle_message_;
-  std::function<void(asio::error_code)> do_handle_error_;
 };
 }  // namespace assetmarket
 

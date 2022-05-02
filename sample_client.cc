@@ -14,7 +14,6 @@ int main(int argc, char* argv[]) {
 
     AsioClient client;
     bool connected_to_server = client.Connect(argv[1], 12345);
-    std::cout << "Connected? " << connected_to_server << std::endl;
 
     while (connected_to_server) {
       std::string command;

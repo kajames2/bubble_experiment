@@ -9,7 +9,12 @@ namespace assetmarket {
 
 // Adapted from
 // https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/Networking/
-enum class MessageType { AcceptedOffer, DebugMessage };
+enum class MessageType {
+  AcceptedOffer,
+  ExperimentStarted,
+  DebugMessage,
+  Connected
+};
 
 struct MessageHeader {
   MessageType id{};
@@ -22,7 +27,7 @@ std::istream& operator>>(std::istream& is, MessageHeader header);
 class Message {
  public:
   Message() {}
-  Message(MessageType id, std::string in_str) { SetBody(id, in_str); }
+  Message(MessageType id, std::string in_str = "") { SetBody(id, in_str); }
   auto SetBody(MessageType id, std::string in_str) -> void {
     body_ = in_str;
     header_.id = id;
