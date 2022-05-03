@@ -26,8 +26,8 @@ class MockServer : public assetmarket::Server {
     messages_.push_back(message);
   }
 
-  virtual auto AddClient(assetmarket::SubjectID id,
-                         const assetmarket::ConnectionInfo& info)
+  virtual auto AddSubject(assetmarket::SubjectID id,
+                          const assetmarket::ConnectionInfo& info)
       -> void override {
     counts_.emplace(id, 0);
   }

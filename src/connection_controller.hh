@@ -17,7 +17,7 @@ class ConnectionController {
 
   auto AcceptConnection(ConnectionInfo info) {
     auto id = exp_->AddSubject();
-    serv_->AddClient(id, info);
+    serv_->AddSubject(id, info);
   }
 
  private:

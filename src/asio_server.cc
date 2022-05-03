@@ -23,12 +23,12 @@ auto AsioServer::Stop() -> void {
 }
 
 auto AsioServer::Send(size_t id, const Message& message) -> void {
-  connections_[id]->Send(message);
+  subjects_.at(id).conn->Send(message);
 };
 
 auto AsioServer::SendAll(const Message& message) -> void {
-  for (auto& client : connections_) {
-    client->Send(message);
+  for (auto& [key, info] : subjects_) {
+    info.conn->Send(message);
   }
 };
 
@@ -45,6 +45,10 @@ auto AsioServer::ProcessMessage(size_t id, Message message) -> void {
   for (auto& proc : processors_) {
     proc->ProcessMessage(id, message);
   }
+}
+
+auto AsioServer::AddSubject(SubjectID id, const ConnectionInfo& conn) -> void {
+  subjects_.emplace(id, conn);
 }
 
 auto AsioServer::WaitForClientConnection() -> void {

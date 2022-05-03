@@ -40,25 +40,60 @@ class AnAsioServer : public Test {
       serv_.AddConnection(TEST_CLIENTS[i]);
     }
   }
+  auto AddSubjects(unsigned int n) {
+    for (unsigned int i = 0; i < n; ++i) {
+      serv_.AddSubject(i, {TEST_CLIENTS[i]});
+    }
+  }
   std::vector<std::shared_ptr<MockConnection>> TEST_CLIENTS{
       MakeMockConnection(), MakeMockConnection(), MakeMockConnection(),
       MakeMockConnection(), MakeMockConnection()};
   AsioServer serv_;
 };
 
-TEST_F(AnAsioServer, CanSendSingleMessage) {
-  AddConnections(2);
-  serv_.Send(1, TEST_MESSAGE);
-  ASSERT_THAT(TEST_CLIENTS[0]->n_mess_, Eq(0));
-  ASSERT_THAT(TEST_CLIENTS[1]->n_mess_, Eq(1));
+TEST_F(AnAsioServer, CanSendMessagesToAddedSubjects) {
+  auto conn = MakeMockConnection();
+  auto conn2 = MakeMockConnection();
+  ConnectionInfo info{conn};
+  ConnectionInfo info2{conn2};
+  serv_.AddSubject(2, info);
+  serv_.AddSubject(1, info2);
+  serv_.Send(2, TEST_MESSAGE);
+  ASSERT_THAT(conn->n_mess_, Eq(1));
+  ASSERT_THAT(conn2->n_mess_, Eq(0));
 }
 
-TEST_F(AnAsioServer, CanSendAllMessage) {
-  AddConnections(3);
+TEST_F(AnAsioServer, ThrowsIfSendingToInvalidSubject) {
+  ASSERT_ANY_THROW(serv_.Send(2, TEST_MESSAGE));
+  serv_.AddSubject(2, ConnectionInfo());
+  ASSERT_ANY_THROW(serv_.Send(0, TEST_MESSAGE));
+}
+
+TEST_F(AnAsioServer, HasNoSubjectsOnStart) {
+  ASSERT_THAT(serv_.SubjectCount(), Eq(0));
+}
+
+TEST_F(AnAsioServer, SubjectsCountedTowardsConnections) {
+  AddSubjects(3);
+  ASSERT_THAT(serv_.SubjectCount(), Eq(3));
+}
+
+TEST_F(AnAsioServer, SendsMessagesToAllSubjects) {
+  AddSubjects(3);
   serv_.SendAll(TEST_MESSAGE);
   for (unsigned int i = 0; i < 3; ++i) {
     ASSERT_THAT(TEST_CLIENTS[i]->n_mess_, Eq(1));
   }
+}
+
+TEST_F(AnAsioServer, DoesNotSendToUnknownConnections) {
+  AddSubjects(3);
+  serv_.AddConnection(TEST_CLIENTS[3]);
+  serv_.SendAll(TEST_MESSAGE);
+  for (unsigned int i = 0; i < 3; ++i) {
+    ASSERT_THAT(TEST_CLIENTS[i]->n_mess_, Eq(1));
+  }
+  ASSERT_THAT(TEST_CLIENTS[3]->n_mess_, Eq(0));
 }
 
 TEST_F(AnAsioServer, CanAddProcessor) {
@@ -88,7 +123,7 @@ TEST_F(AnAsioServer, CanStopAcceptingClients) {
   finished = client.WaitReceiveMessage();
   ASSERT_TRUE(finished);
   ASSERT_TRUE(client.failed);
-  ASSERT_THAT(serv_.GetConnections().size(), Eq(0));
+  ASSERT_THAT(serv_.UnknownConnectionCount(), Eq(0));
 }
 
 TEST_F(AnAsioServer, AcceptsClients) {
@@ -96,11 +131,11 @@ TEST_F(AnAsioServer, AcceptsClients) {
   auto finished = client.WaitForConnect();
   ASSERT_TRUE(finished);
   ASSERT_TRUE(client.received_message);
-  ASSERT_THAT(serv_.GetConnections().size(), Eq(1));
-  client.received_message = false;
-  serv_.SendAll(TEST_MESSAGE);
-  finished = client.WaitReceiveMessage();
-  ASSERT_TRUE(finished);
-  ASSERT_TRUE(client.received_message);
+  ASSERT_THAT(serv_.UnknownConnectionCount(), Eq(1));
+  // client.received_message = false;
+  // serv_.SendAll(TEST_MESSAGE);
+  // finished = client.WaitReceiveMessage();
+  // ASSERT_TRUE(finished);
+  // ASSERT_TRUE(client.received_message);
   serv_.Stop();
 }

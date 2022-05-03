@@ -15,6 +15,7 @@
 #include "client_message_processor.hh"
 #include "connection.hh"
 #include "server.hh"
+#include "subject.hh"
 
 namespace assetmarket {
 
@@ -32,19 +33,15 @@ class AsioServer : public Server {
   auto StartAcceptingClients() -> void { accepting_clients_ = true; }
   auto StopAcceptingClients() -> void { accepting_clients_ = false; }
 
-  auto Send(size_t id, const Message& message) -> void override;
+  auto Send(SubjectID id, const Message& message) -> void override;
   auto SendAll(const Message& message) -> void override;
   auto AddProcessor(std::shared_ptr<ClientMessageProcessor> proc) -> void;
   auto ProcessMessage(size_t id, Message message) -> void;
-  auto AddClient(SubjectID id, const ConnectionInfo& conn) -> void {}
+  auto AddSubject(SubjectID id, const ConnectionInfo& conn) -> void override;
 
-  std::vector<Connection*> GetConnections() {
-    std::vector<Connection*> conns;
-    for (auto& con : connections_) {
-      conns.push_back(con.get());
-    }
-    return conns;
-  }
+  auto SubjectCount() const -> size_t { return subjects_.size(); }
+
+  auto UnknownConnectionCount() const -> size_t { return connections_.size(); }
 
  private:
   auto WaitForClientConnection() -> void;
@@ -53,6 +50,7 @@ class AsioServer : public Server {
 
   bool accepting_clients_ = true;
   std::vector<std::shared_ptr<Connection>> connections_;
+  std::unordered_map<SubjectID, ConnectionInfo> subjects_;
   std::vector<std::shared_ptr<ClientMessageProcessor>> processors_;
   asio::io_context context_;
   std::thread m_threadContext;

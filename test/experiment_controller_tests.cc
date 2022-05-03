@@ -35,5 +35,3 @@ TEST_F(AnExperimentController, NotifiesSubjectsOnExperimentStart) {
     ASSERT_THAT(count, Eq(1));
   }
 }
-
-// TEST_F(AnExperimentController, )

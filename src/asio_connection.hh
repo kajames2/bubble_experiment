@@ -5,9 +5,11 @@
 #include <asio/ts/buffer.hpp>
 #include <asio/ts/internet.hpp>
 #include <deque>
+#include <iostream>
 
 #include "connection.hh"
 #include "server.hh"
+#include <string>
 
 // The base of this code comes from
 // raw.githubusercontent.com/Unlined/olcPixelGameEngine/master/Videos/Networking
@@ -29,6 +31,8 @@ class AsioConnection : public Connection {
         do_handle_connection_(do_handle_connection) {}
 
   void ConnectToClient() {
+    std::cout << socket_.remote_endpoint().address().to_string() << std::endl;
+    std::cout << socket_.remote_endpoint().port() << std::endl;
     if (socket_.is_open()) {
       ReadHeader();
     }
