@@ -13,7 +13,8 @@ enum class MessageType {
   AcceptedOffer,
   ExperimentStarted,
   DebugMessage,
-  Connected
+  Connected,
+  ClientType
 };
 
 struct MessageHeader {
@@ -36,5 +37,8 @@ class Message {
   MessageHeader header_;
   std::string body_;
 };
+
+std::ostream& operator<<(std::ostream& os, Message message);
+
 }  // namespace assetmarket
 #endif  // MESSAGE_HH

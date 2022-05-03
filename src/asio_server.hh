@@ -19,6 +19,8 @@
 
 namespace assetmarket {
 
+enum class ClientType { Subject, Monitor };
+
 // The base of this code comes from
 // raw.githubusercontent.com/OneLoneCoder/olcPixelGameEngine/master/Videos/Networking
 class AsioServer : public Server {
@@ -38,6 +40,7 @@ class AsioServer : public Server {
   auto AddProcessor(std::shared_ptr<ClientMessageProcessor> proc) -> void;
   auto ProcessMessage(size_t id, Message message) -> void;
   auto AddSubject(SubjectID id, const ConnectionInfo& conn) -> void override;
+  auto AddSubject(SubjectID id, size_t conn_id) -> void override;
 
   auto SubjectCount() const -> size_t { return subjects_.size(); }
 
@@ -45,11 +48,12 @@ class AsioServer : public Server {
 
  private:
   auto WaitForClientConnection() -> void;
-  auto MakeConnection(asio::ip::tcp::socket socket)
+  auto MakeConnection(size_t id, asio::ip::tcp::socket socket)
       -> std::unique_ptr<AsioConnection>;
 
+  size_t next_id = 0;
   bool accepting_clients_ = true;
-  std::vector<std::shared_ptr<Connection>> connections_;
+  std::vector<ConnectionInfo> connections_;
   std::unordered_map<SubjectID, ConnectionInfo> subjects_;
   std::vector<std::shared_ptr<ClientMessageProcessor>> processors_;
   asio::io_context context_;

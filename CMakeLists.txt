@@ -25,21 +25,21 @@ include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/lib/asio-1.22.1/include)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-include(GoogleTest)
+# include(GoogleTest)
 
-file(GLOB test_SRC CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/test/*/[!.]*.cc")
-file(GLOB test_SRC CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/*/[!.]*.cc")
-set(TEST_SOURCES ${test_SRC})
+# file(GLOB test_SRC CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/test/*/[!.]*.cc")
+# file(GLOB test_SRC CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/*/[!.]*.cc")
+# set(TEST_SOURCES ${test_SRC})
 
-set(TEST_MAIN ${PROJECT_SOURCE_DIR}/tests_main.cc)
+# set(TEST_MAIN ${PROJECT_SOURCE_DIR}/tests_main.cc)
 
-add_executable(tests_main ${TEST_MAIN} ${TEST_SOURCES})
-gtest_discover_tests(tests_main)
+# add_executable(tests_main ${TEST_MAIN} ${TEST_SOURCES})
+# gtest_discover_tests(tests_main)
 
 # Including custom cmake rules
 # include(cmake/clang-cxx-dev-tools.cmake)
 
-target_link_libraries(tests_main gtest gmock gtest_main pthread)
+# target_link_libraries(tests_main gtest gmock gtest_main pthread)
 set(COMPILE_OPTIONS
   -W
   -Wall
@@ -57,9 +57,9 @@ set(COMPILE_OPTIONS
   -Wformat=2
   -pedantic)
 
-target_compile_options(tests_main PRIVATE ${COMPILE_OPTIONS})
+# target_compile_options(tests_main PRIVATE ${COMPILE_OPTIONS})
 
-add_test(NAME tests_main COMMAND tests_main)
+# add_test(NAME tests_main COMMAND tests_main)
 
 file(GLOB exec_SRC CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src/[!.]*.cc")
 set(EXEC_SOURCES ${exec_SRC})

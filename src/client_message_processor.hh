@@ -2,12 +2,13 @@
 #define CLIENT_MESSAGE_PROCESSOR_HH
 
 #include "connection.hh"
+#include "connection_info.hh"
 #include "message.hh"
 
 namespace assetmarket {
 
 struct ClientMessage {
-  Connection& client;
+  ConnectionInfo& client;
   Message message;
 };
 

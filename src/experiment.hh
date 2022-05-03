@@ -18,7 +18,10 @@ class Experiment : public ExperimentInterface {
     subjects_.push_back(p);
     return subjects_.size();
   }
-  auto AddSubject() -> SubjectID override {}
+  auto AddSubject() -> SubjectID override {
+    subjects_.emplace_back();
+    return subjects_.size() - 1;
+  }
   auto StartExperiment() -> void override {}
   auto GetStage() { return stage_; }
   auto NewPeriod() {

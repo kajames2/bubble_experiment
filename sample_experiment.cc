@@ -2,6 +2,9 @@
 #include <string>
 
 #include "asio_server.hh"
+#include "connection_controller.hh"
+#include "experiment.hh"
+#include "message_director.hh"
 #include "src/client_message_processor.hh"
 
 using namespace assetmarket;
@@ -19,9 +22,15 @@ int main(int argc, char **argv) {
   }
 
   auto proc = std::make_shared<MockMessageProcessor>();
-  AsioServer server(12345);
-  server.AddProcessor(proc);
-  server.Start();
+  auto server = std::make_shared<AsioServer>(12345);
+  auto exp = std::make_shared<Experiment>();
+  auto conn_cont = std::make_shared<ConnectionController>(server, exp);
+  auto director =
+      std::make_shared<MessageDirector>(nullptr, nullptr, conn_cont);
+
+  server->AddProcessor(director);
+  server->AddProcessor(proc);
+  server->Start();
 
   while (true) {
     std::string command;
@@ -31,13 +40,13 @@ int main(int argc, char **argv) {
                 << "\n";
       assetmarket::Message mess(MessageType::DebugMessage,
                                 "Test Message from Server");
-      server.SendAll(mess);
+      server->SendAll(mess);
     } else if (command == "stop") {
-      server.Stop();
+      server->Stop();
     } else {
       std::cout << "Invalid command" << std::endl;
     }
     std::cin.ignore();
   }
-  server.Stop();
+  server->Stop();
 }

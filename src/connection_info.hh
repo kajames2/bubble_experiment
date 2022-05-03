@@ -4,9 +4,12 @@
 #include <memory>
 
 #include "connection.hh"
+#include <string>
 
 namespace assetmarket {
 struct ConnectionInfo {
+  size_t id;
+  std::string ip;
   std::shared_ptr<Connection> conn;
 };
 }  // namespace assetmarket

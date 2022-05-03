@@ -17,4 +17,8 @@ std::istream& operator>>(std::istream& is, MessageHeader header) {
   return is;
 }
 
+std::ostream& operator<<(std::ostream& os, Message message) {
+  return os << message.header_ << ";" << message.body_;
+}
+
 }  // namespace assetmarket

@@ -1,6 +1,5 @@
 #include "asio_client.hh"
 
-#include <iostream>
 #include <string>
 
 namespace assetmarket {
@@ -13,9 +12,7 @@ auto AsioClient::Connect(const std::string& host, const uint16_t port) -> bool {
 
     m_connection = std::make_unique<AsioConnection>(
         m_context, asio::ip::tcp::socket(m_context),
-        [this](Message message) {
-          std::cout << message.header_ << " " << message.body_ << "\n";
-        },
+        [this](Message message) { ProcessMessage(message); },
         [this](std::error_code ec) {});
 
     m_connection->ConnectToServer(endpoints);
@@ -40,6 +37,12 @@ auto AsioClient::IsConnected() -> bool {
     return m_connection->IsConnected();
   else
     return false;
+}
+
+auto AsioClient::ProcessMessage(Message message) -> void {
+  for (auto& proc : processors_) {
+    proc->ProcessMessage(message);
+  }
 }
 
 auto AsioClient::Send(const Message& msg) -> void {

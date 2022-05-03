@@ -1,6 +1,7 @@
 #include "asio_server.hh"
 
 #include <iostream>
+#include <string>
 
 namespace assetmarket {
 AsioServer::AsioServer(uint16_t port)
@@ -33,7 +34,7 @@ auto AsioServer::SendAll(const Message& message) -> void {
 };
 
 auto AsioServer::AddConnection(std::shared_ptr<Connection> conn) -> void {
-  connections_.push_back(conn);
+  connections_.emplace_back(next_id++, "", conn);
 }
 
 auto AsioServer::AddProcessor(std::shared_ptr<ClientMessageProcessor> proc)
@@ -49,30 +50,43 @@ auto AsioServer::ProcessMessage(size_t id, Message message) -> void {
 
 auto AsioServer::AddSubject(SubjectID id, const ConnectionInfo& conn) -> void {
   subjects_.emplace(id, conn);
+  std::erase_if(connections_,
+                [&conn](ConnectionInfo c) { return c.id == conn.id; });
+  std::cout << "Added Subject" << std::endl;
+}
+
+auto AsioServer::AddSubject(SubjectID id, size_t conn_id) -> void {
+  std::cout << "adding subject: " << id << ", " << conn_id << std::endl;
+  auto conn =
+      std::find_if(connections_.begin(), connections_.end(),
+                   [conn_id](ConnectionInfo c) { return c.id == conn_id; });
+  AddSubject(id, *conn);
 }
 
 auto AsioServer::WaitForClientConnection() -> void {
-  m_asioAcceptor.async_accept([this](std::error_code ec,
-                                     asio::ip::tcp::socket socket) {
-    if (!ec) {
-      std::shared_ptr<AsioConnection> conn = MakeConnection(std::move(socket));
-      if (accepting_clients_) {
-        connections_.push_back(conn);
-        conn->ConnectToClient();
-        conn->Send(Message(MessageType::Connected));
-      } else {
-        std::cerr << "rejected connection\n";
-      }
-    } else {
-      std::cerr << "failed new connection:" << ec.message() << "\n";
-    }
-    WaitForClientConnection();
-  });
+  m_asioAcceptor.async_accept(
+      [this](std::error_code ec, asio::ip::tcp::socket socket) {
+        if (!ec) {
+          auto id = next_id++;
+          auto ip = socket.remote_endpoint().address().to_string();
+          std::shared_ptr<AsioConnection> conn =
+              MakeConnection(id, std::move(socket));
+          if (accepting_clients_) {
+            connections_.emplace_back(id, ip, conn);
+            conn->ConnectToClient();
+            conn->Send(Message(MessageType::Connected));
+          } else {
+            std::cerr << "rejected connection\n";
+          }
+        } else {
+          std::cerr << "failed new connection:" << ec.message() << "\n";
+        }
+        WaitForClientConnection();
+      });
 }
 
-auto AsioServer::MakeConnection(asio::ip::tcp::socket socket)
+auto AsioServer::MakeConnection(size_t id, asio::ip::tcp::socket socket)
     -> std::unique_ptr<AsioConnection> {
-  auto id = connections_.size();
   auto newconn = std::make_unique<AsioConnection>(
       context_, std::move(socket),
       [this, id](Message message) { ProcessMessage(id, message); },

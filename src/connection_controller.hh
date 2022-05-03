@@ -15,9 +15,9 @@ class ConnectionController {
                        std::shared_ptr<ExperimentInterface> exp)
       : serv_(serv), exp_(exp) {}
 
-  auto AcceptConnection(ConnectionInfo info) {
+  auto AcceptSubject(size_t conn_id) {
     auto id = exp_->AddSubject();
-    serv_->AddSubject(id, info);
+    serv_->AddSubject(id, conn_id);
   }
 
  private:

@@ -54,8 +54,8 @@ class AnAsioServer : public Test {
 TEST_F(AnAsioServer, CanSendMessagesToAddedSubjects) {
   auto conn = MakeMockConnection();
   auto conn2 = MakeMockConnection();
-  ConnectionInfo info{conn};
-  ConnectionInfo info2{conn2};
+  ConnectionInfo info{0, "", conn};
+  ConnectionInfo info2{0, "", conn2};
   serv_.AddSubject(2, info);
   serv_.AddSubject(1, info2);
   serv_.Send(2, TEST_MESSAGE);
