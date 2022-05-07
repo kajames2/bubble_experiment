@@ -12,6 +12,7 @@
 #include <asio/ts/internet.hpp>
 
 #include "asio_connection.hh"
+#include "asset_market_enums.hh"
 #include "client_message_processor.hh"
 #include "connection.hh"
 #include "server.hh"
@@ -19,13 +20,11 @@
 
 namespace assetmarket {
 
-enum class ClientType { Subject, Monitor };
-
 // The base of this code comes from
 // raw.githubusercontent.com/OneLoneCoder/olcPixelGameEngine/master/Videos/Networking
 class AsioServer : public Server {
  public:
-  AsioServer(uint16_t port);
+  AsioServer(asio::io_context& context, uint16_t port);
   virtual ~AsioServer() { Stop(); }
 
   auto Start() -> bool;
@@ -37,11 +36,12 @@ class AsioServer : public Server {
 
   auto Send(SubjectID id, const Message& message) -> void override;
   auto SendAll(const Message& message) -> void override;
+  auto SendAdmins(const Message& message) -> void override;
   auto AddProcessor(std::shared_ptr<ClientMessageProcessor> proc) -> void;
   auto ProcessMessage(size_t id, Message message) -> void;
   auto AddSubject(SubjectID id, const ConnectionInfo& conn) -> void override;
   auto AddSubject(SubjectID id, size_t conn_id) -> void override;
-
+  auto AddAdmin(size_t conn_id) -> void override;
   auto SubjectCount() const -> size_t { return subjects_.size(); }
 
   auto UnknownConnectionCount() const -> size_t { return connections_.size(); }
@@ -55,9 +55,10 @@ class AsioServer : public Server {
   bool accepting_clients_ = true;
   std::vector<ConnectionInfo> connections_;
   std::unordered_map<SubjectID, ConnectionInfo> subjects_;
+  std::unordered_map<size_t, SubjectID> subject_ids_;
+  std::vector<ConnectionInfo> admins_;
   std::vector<std::shared_ptr<ClientMessageProcessor>> processors_;
-  asio::io_context context_;
-  std::thread m_threadContext;
+  asio::io_context& context_;
   asio::ip::tcp::acceptor m_asioAcceptor;
   uint32_t nIDCounter = 10000;
 };

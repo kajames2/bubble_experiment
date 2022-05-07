@@ -5,25 +5,20 @@
 #include <ostream>
 #include <string>
 
+#include "asset_market_enums.hh"
+
 namespace assetmarket {
 
 // Adapted from
 // https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/Networking/
-enum class MessageType {
-  AcceptedOffer,
-  ExperimentStarted,
-  DebugMessage,
-  Connected,
-  ClientType
-};
 
 struct MessageHeader {
   MessageType id{};
   size_t size = 0;
 };
 
-std::ostream& operator<<(std::ostream& os, MessageHeader header);
-std::istream& operator>>(std::istream& is, MessageHeader header);
+std::ostream& operator<<(std::ostream& os, const MessageHeader& header);
+std::istream& operator>>(std::istream& is, MessageHeader& header);
 
 class Message {
  public:
@@ -38,7 +33,7 @@ class Message {
   std::string body_;
 };
 
-std::ostream& operator<<(std::ostream& os, Message message);
+std::ostream& operator<<(std::ostream& os, const Message& message);
 
 }  // namespace assetmarket
 #endif  // MESSAGE_HH

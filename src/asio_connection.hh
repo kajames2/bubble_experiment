@@ -6,10 +6,10 @@
 #include <asio/ts/internet.hpp>
 #include <deque>
 #include <iostream>
+#include <string>
 
 #include "connection.hh"
 #include "server.hh"
-#include <string>
 
 // The base of this code comes from
 // raw.githubusercontent.com/Unlined/olcPixelGameEngine/master/Videos/Networking
@@ -108,8 +108,8 @@ class AsioConnection : public Connection {
         socket_, asio::buffer(&m_msgTemporaryIn.header_, sizeof(MessageHeader)),
         [this](std::error_code ec, std::size_t) {
           if (!ec) {
+            m_msgTemporaryIn.body_.resize(m_msgTemporaryIn.header_.size);
             if (m_msgTemporaryIn.header_.size > 0) {
-              m_msgTemporaryIn.body_.resize(m_msgTemporaryIn.header_.size);
               ReadBody();
             } else {
               do_handle_message_(m_msgTemporaryIn);

@@ -4,6 +4,7 @@
 #include "connection.hh"
 #include "connection_info.hh"
 #include "message.hh"
+#include "subject.hh"
 
 namespace assetmarket {
 
@@ -14,7 +15,8 @@ struct ClientMessage {
 
 class ClientMessageProcessor {
  public:
-  virtual auto ProcessMessage(size_t id, Message message) -> void = 0;
+  virtual auto ProcessSubjectMessage(SubjectID id, Message message) -> void = 0;
+  virtual auto ProcessMessage(size_t conn_id, Message message) -> void = 0;
   virtual ~ClientMessageProcessor() {}
 };
 

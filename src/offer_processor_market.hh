@@ -4,15 +4,17 @@
 #include "market.hh"
 #include "offer_processor.hh"
 #include "portfolio.hh"
-#include <vector>
+#include "subject.hh"
 
 namespace assetmarket {
-using PortfolioSet = std::vector<Portfolio>;
+using PortfolioSet = std::unordered_map<SubjectID, Portfolio>;
 
 class OfferProcessorMarket : public OfferProcessor {
  public:
   OfferProcessorMarket(Market market, std::shared_ptr<PortfolioSet>);
   virtual auto ProcessOffer(Offer offer) -> MarketSubmissionResult override;
+  virtual auto ProcessCreate(SubjectID id) -> CreationResult override;
+  virtual auto ProcessRetract(RetractRequest rr) -> RetractResult override;
 
  private:
   Market market_;

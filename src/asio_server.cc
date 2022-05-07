@@ -4,34 +4,39 @@
 #include <string>
 
 namespace assetmarket {
-AsioServer::AsioServer(uint16_t port)
-    : m_asioAcceptor(context_,
+AsioServer::AsioServer(asio::io_context& context, uint16_t port)
+    : context_(context),
+      m_asioAcceptor(context,
                      asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {}
 
 auto AsioServer::Start() -> bool {
   try {
     WaitForClientConnection();
-    m_threadContext = std::thread([this]() { context_.run(); });
   } catch (std::exception& e) {
     return false;
   }
   return true;
 }
 
-auto AsioServer::Stop() -> void {
-  context_.stop();
-  if (m_threadContext.joinable()) m_threadContext.join();
-}
+auto AsioServer::Stop() -> void { accepting_clients_ = false; }
 
 auto AsioServer::Send(size_t id, const Message& message) -> void {
   subjects_.at(id).conn->Send(message);
+  SendAdmins(message);
 };
 
 auto AsioServer::SendAll(const Message& message) -> void {
   for (auto& [key, info] : subjects_) {
     info.conn->Send(message);
   }
+  SendAdmins(message);
 };
+
+auto AsioServer::SendAdmins(const Message& message) -> void {
+  for (auto& info : admins_) {
+    info.conn->Send(message);
+  }
+}
 
 auto AsioServer::AddConnection(std::shared_ptr<Connection> conn) -> void {
   connections_.emplace_back(next_id++, "", conn);
@@ -43,16 +48,33 @@ auto AsioServer::AddProcessor(std::shared_ptr<ClientMessageProcessor> proc)
 }
 
 auto AsioServer::ProcessMessage(size_t id, Message message) -> void {
-  for (auto& proc : processors_) {
-    proc->ProcessMessage(id, message);
+  if (subject_ids_.contains(id)) {
+    auto sub_id = subject_ids_.at(id);
+    for (auto& proc : processors_) {
+      proc->ProcessSubjectMessage(sub_id, message);
+    }
+  } else {
+    for (auto& proc : processors_) {
+      proc->ProcessMessage(id, message);
+    }
   }
 }
 
 auto AsioServer::AddSubject(SubjectID id, const ConnectionInfo& conn) -> void {
   subjects_.emplace(id, conn);
+  subject_ids_.emplace(conn.id, id);
   std::erase_if(connections_,
                 [&conn](ConnectionInfo c) { return c.id == conn.id; });
   std::cout << "Added Subject" << std::endl;
+}
+
+auto AsioServer::AddAdmin(size_t conn_id) -> void {
+  auto conn =
+      std::find_if(connections_.begin(), connections_.end(),
+                   [conn_id](ConnectionInfo c) { return c.id == conn_id; });
+  admins_.push_back(*conn);
+  std::erase_if(connections_,
+                [&conn](ConnectionInfo c) { return c.id == conn->id; });
 }
 
 auto AsioServer::AddSubject(SubjectID id, size_t conn_id) -> void {

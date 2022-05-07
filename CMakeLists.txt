@@ -70,6 +70,12 @@ add_executable(sample_client ${CLIENT} ${EXEC_SOURCES})
 target_link_libraries(sample_client pthread)
 target_compile_options(sample_client PRIVATE ${COMPILE_OPTIONS})
 
+set(ADMIN ${PROJECT_SOURCE_DIR}/sample_admin.cc)
+add_executable(sample_admin ${ADMIN} ${EXEC_SOURCES})
+
+target_link_libraries(sample_admin pthread)
+target_compile_options(sample_admin PRIVATE ${COMPILE_OPTIONS})
+
 set(SERVER ${PROJECT_SOURCE_DIR}/sample_experiment.cc)
 add_executable(sample_server ${SERVER} ${EXEC_SOURCES})
 

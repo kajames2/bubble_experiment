@@ -5,11 +5,11 @@
 
 namespace assetmarket {
 
-std::ostream& operator<<(std::ostream& os, MessageHeader header) {
+std::ostream& operator<<(std::ostream& os, const MessageHeader& header) {
   return os << static_cast<int>(header.id) << ";" << header.size;
 }
 
-std::istream& operator>>(std::istream& is, MessageHeader header) {
+std::istream& operator>>(std::istream& is, MessageHeader& header) {
   int id;
   is >> id;
   header.id = static_cast<MessageType>(id);
@@ -17,7 +17,7 @@ std::istream& operator>>(std::istream& is, MessageHeader header) {
   return is;
 }
 
-std::ostream& operator<<(std::ostream& os, Message message) {
+std::ostream& operator<<(std::ostream& os, const Message& message) {
   return os << message.header_ << ";" << message.body_;
 }
 

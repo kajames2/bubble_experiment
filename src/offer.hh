@@ -5,12 +5,14 @@
 #include <ostream>
 #include <tuple>
 
+#include "subject.hh"
+
 namespace assetmarket {
 class DifferentOffersWithSameID : std::exception {};
 
 struct Offer {
   unsigned int id;
-  unsigned int player_id;
+  SubjectID player_id;
   int price;
   unsigned int time_elapsed;
 

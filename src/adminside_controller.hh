@@ -1,5 +1,5 @@
-#ifndef CLIENTSIDE_CONTROLLER_HH
-#define CLIENTSIDE_CONTROLLER_HH
+#ifndef ADMINSIDE_CONTROLLER_HH
+#define ADMINSIDE_CONTROLLER_HH
 
 #include <iostream>
 #include <memory>
@@ -11,18 +11,15 @@
 #include "server_message_processor.hh"
 
 namespace assetmarket {
-class ClientsideController : public ServerMessageProcessor {
+class AdminsideController : public ServerMessageProcessor {
  public:
-  ClientsideController(std::shared_ptr<AsioClient> client) : client_(client) {}
+  AdminsideController(std::shared_ptr<AsioClient> admin) : admin_(admin) {}
   auto ProcessMessage(Message message) -> void override {
     switch (message.header_.id) {
       case MessageType::Connected:
-        client_->Send(
+        admin_->Send(
             Message(MessageType::ClientType,
-                    std::to_string(static_cast<int>(ClientType::Subject))));
-        break;
-      case MessageType::DebugMessage:
-        std::cerr << message.body_ << std::endl;
+                    std::to_string(static_cast<int>(ClientType::Admin))));
         break;
       default:
         std::cerr << message.header_ << "---" << message.body_ << std::endl;
@@ -31,8 +28,8 @@ class ClientsideController : public ServerMessageProcessor {
   }
 
  private:
-  std::shared_ptr<AsioClient> client_;
+  std::shared_ptr<AsioClient> admin_;
 };
 
 }  // namespace assetmarket
-#endif  // CLIENTSIDE_CONTROLLER_HH
+#endif  // ADMINSIDE_CONTROLLER_HH

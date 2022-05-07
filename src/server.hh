@@ -11,8 +11,10 @@ class Server {
  public:
   virtual auto Send(SubjectID id, const Message& message) -> void = 0;
   virtual auto SendAll(const Message& message) -> void = 0;
+  virtual auto SendAdmins(const Message& message) -> void = 0;
   virtual auto AddSubject(SubjectID id, const ConnectionInfo& conn) -> void = 0;
   virtual auto AddSubject(SubjectID id, size_t conn_id) -> void = 0;
+  virtual auto AddAdmin(size_t conn_id) -> void = 0;
   virtual ~Server() {}
 };
 }  // namespace assetmarket

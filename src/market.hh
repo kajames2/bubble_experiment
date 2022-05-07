@@ -1,11 +1,9 @@
 #ifndef MARKET_HH
 #define MARKET_HH
 
-#include <algorithm>
 #include <memory>
 #include <ranges>
 #include <tuple>
-#include <vector>
 
 #include "clock.hh"
 #include "offer.hh"

@@ -5,8 +5,8 @@
 
 namespace assetmarket {
 struct Trade {
-  unsigned int buyer;
-  unsigned int seller;
+  SubjectID buyer;
+  SubjectID seller;
   unsigned int price;
   unsigned int timestamp;
   unsigned int bid_id;
@@ -15,7 +15,7 @@ struct Trade {
   auto operator<=>(const Trade&) const = default;
 };
 
-std::ostream& operator<<(std::ostream& os, Trade trade);
+std::ostream& operator<<(std::ostream& os, const Trade& trade);
 std::istream& operator>>(std::istream& is, Trade& trade);
 
 }  // namespace assetmarket

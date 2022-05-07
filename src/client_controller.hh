@@ -3,10 +3,13 @@
 
 #include <memory>
 
+#include "bid_ask.hh"
 #include "clock.hh"
 #include "offer.hh"
 #include "offer_processor.hh"
+#include "retract_request.hh"
 #include "server.hh"
+#include "subject.hh"
 
 namespace assetmarket {
 class ClientController {
@@ -15,8 +18,10 @@ class ClientController {
                    std::shared_ptr<Server> server,
                    std::shared_ptr<Clock> clock);
 
-  auto TakeBid(unsigned int p_id, int price) -> MarketSubmissionResult;
-  auto TakeAsk(unsigned int p_id, int price) -> MarketSubmissionResult;
+  auto TakeBid(BidAsk ba) -> void;
+  auto TakeAsk(BidAsk ba) -> void;
+  auto RetractOffer(RetractRequest rr) -> void;
+  auto CreateAsset(SubjectID player_id) -> void;
 
  private:
   std::unique_ptr<OfferProcessor> proc_;
@@ -24,10 +29,8 @@ class ClientController {
   std::shared_ptr<Clock> clock_;
   unsigned int id = 0;
 
-  auto SendMessage(Message mess, std::optional<size_t> player_id = std::nullopt)
-      -> void;
-  auto TakeOffer(Offer offer) -> MarketSubmissionResult;
-  auto MakeOffer(unsigned int p_id, int price) -> Offer;
+  auto TakeOffer(Offer offer) -> void;
+  auto MakeOffer(SubjectID p_id, int price) -> Offer;
 };
 
 }  // namespace assetmarket

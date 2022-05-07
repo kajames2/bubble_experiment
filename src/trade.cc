@@ -5,7 +5,7 @@
 
 namespace assetmarket {
 
-std::ostream& operator<<(std::ostream& os, Trade trade) {
+std::ostream& operator<<(std::ostream& os, const Trade& trade) {
   return os << trade.buyer << " " << trade.seller << " " << trade.price << " "
             << trade.timestamp << " " << trade.bid_id << " " << trade.ask_id;
 }

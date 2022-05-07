@@ -1,13 +1,14 @@
 #ifndef MESSAGE_DIRECTOR
 #define MESSAGE_DIRECTOR
 
-#include <sstream>
+#include <string>
 
 #include "client_controller.hh"
 #include "client_message_processor.hh"
 #include "connection_controller.hh"
 #include "experiment_controller.hh"
 #include "message.hh"
+#include "string_funcs.hh"
 
 namespace assetmarket {
 class MessageDirector : public ClientMessageProcessor {
@@ -19,16 +20,106 @@ class MessageDirector : public ClientMessageProcessor {
         exp_cont_(exp_cont),
         conn_cont_(conn_cont) {}
 
-  auto ProcessMessage(size_t id, Message message) -> void override {
+  auto ProcessBid(size_t id, Message message) -> void {
+    BidAsk ba;
+    from_string(message.body_, ba);
+    subject_cont_->TakeBid(ba);
+  }
+
+  auto ProcessAsk(size_t id, Message message) -> void {
+    BidAsk ba;
+    from_string(message.body_, ba);
+    subject_cont_->TakeAsk(ba);
+  }
+
+  auto ProcessRetract(size_t id, Message message) -> void {
+    RetractRequest rr;
+    from_string(message.body_, rr);
+    subject_cont_->RetractOffer(rr);
+  }
+
+  auto ProcessCreate(size_t id, Message message) -> void {
+    subject_cont_->CreateAsset(id);
+  }
+
+  auto ProcessName(size_t id, Message message) -> void {
+    std::string name = message.body_;
+    exp_cont_->TakeName(id, name);
+  }
+
+  auto ProcessReady(size_t id, Message message) -> void {
+    exp_cont_->Ready(id);
+  }
+
+  auto ProcessClientType(size_t id, Message message) -> void {
+    int cint;
+    from_string(message.body_, cint);
+    ClientType c = static_cast<ClientType>(cint);
+    if (c == ClientType::Subject) {
+      conn_cont_->AcceptSubject(id);
+    } else if (c == ClientType::Admin) {
+      conn_cont_->AcceptAdmin(id);
+    }
+  }
+
+  auto ProcessStartInstructions(Message message) -> void {
+    exp_cont_->StartInstructions();
+  }
+
+  auto ProcessStartExperiment(Message message) -> void {
+    exp_cont_->StartExperiment();
+  }
+
+  auto ProcessEndEarly(Message message) -> void { exp_cont_->StartPayouts(); }
+
+  auto ProcessLoadConfiguration(Message message) -> void {
+    std::string filepath = message.body_;
+    exp_cont_->LoadConfiguration(filepath);
+  }
+
+  auto ProcessMessage(size_t conn_id, Message message) -> void override {
     switch (message.header_.id) {
+      case MessageType::StartInstructions:
+        ProcessStartInstructions(message);
+        break;
+      case MessageType::StartExperiment:
+        ProcessStartExperiment(message);
+        break;
+      case MessageType::EndEarly:
+        ProcessEndEarly(message);
+        break;
+      case MessageType::LoadConfiguration:
+        ProcessLoadConfiguration(message);
+        break;
       case MessageType::ClientType:
-        int cint;
-        std::stringstream ss(message.body_);
-        ss >> cint;
-        ClientType c = static_cast<ClientType>(cint);
-        if (c == ClientType::Subject) {
-          conn_cont_->AcceptSubject(id);
-        }
+        ProcessClientType(conn_id, message);
+        break;
+      default:
+        break;
+    }
+  }
+
+  auto ProcessSubjectMessage(SubjectID id, Message message) -> void override {
+    switch (message.header_.id) {
+      case MessageType::Bid:
+        ProcessBid(id, message);
+        break;
+      case MessageType::Ask:
+        ProcessAsk(id, message);
+        break;
+      case MessageType::Retract:
+        ProcessRetract(id, message);
+        break;
+      case MessageType::Create:
+        ProcessCreate(id, message);
+        break;
+      case MessageType::Name:
+        ProcessName(id, message);
+        break;
+      case MessageType::Ready:
+        ProcessReady(id, message);
+        break;
+      default:
         break;
     }
   }
