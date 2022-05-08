@@ -7,15 +7,10 @@
 #include "asset_market_enums.hh"
 #include "configuration.hh"
 #include "experiment_interface.hh"
+#include "experiment_state.hh"
 #include "subject.hh"
 
 namespace assetmarket {
-
-struct ExperimentState {
-  unsigned int round = 0;
-  Status status = Status::NotStarted;
-  Stage stage = Stage::PreExperiment;
-};
 
 class Experiment : public ExperimentInterface {
  public:
@@ -80,11 +75,15 @@ class Experiment : public ExperimentInterface {
     subjects_[id].name = name;
   }
 
-  auto SetConfiguration(const Configuration& config) -> void override {}
+  auto SetConfiguration(const Configuration& config) -> void override {
+    config_ = config;
+  }
 
  private:
+  Configuration config_;
   std::unordered_map<SubjectID, Subject> subjects_;
   std::shared_ptr<ExperimentState> exp_state_;
+  // std::shared_ptr<MarketState> market_state_;
 };
 }  // namespace assetmarket
 

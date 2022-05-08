@@ -2,10 +2,12 @@
 #define CONFIGURATION_H
 
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
-#include "offer_processor_market.hh"
+#include "portfolio.hh"
+#include "subject.hh"
 
 namespace assetmarket {
 

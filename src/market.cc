@@ -1,7 +1,7 @@
 #include "market.hh"
 
-#include <optional>
 #include <algorithm>
+#include <optional>
 
 namespace assetmarket {
 auto CanTrade(const OfferQueue& bids, const OfferQueue& asks) -> bool;
@@ -18,6 +18,14 @@ auto Market::Asks() const -> OfferQueue { return asks_; }
 
 auto Market::StandingAsk() const -> std::optional<Offer> {
   return asks_.StandingOffer();
+}
+
+auto Market::GetOffer(unsigned int id) -> std::optional<Offer> {
+  auto off = bids_.GetOffer(id);
+  if (!off) {
+    off = asks_.GetOffer(id);
+  }
+  return off;
 }
 
 auto Market::Retract(unsigned int id) -> void {
@@ -68,8 +76,12 @@ auto Market::ProcessOffer(Offer offer) -> std::optional<Trade> {
   return PopTrade();
 }
 
+auto CanTrade(const Offer& bid, const Offer& ask) -> bool {
+  return bid.price + ask.price >= 0;
+}
+
 auto CanTrade(const OfferQueue& bids, const OfferQueue& asks) -> bool {
   if (bids.empty() || asks.empty()) return false;
-  return (bids.StandingOffer()->price + asks.StandingOffer()->price >= 0);
+  return CanTrade(*bids.StandingOffer(), *asks.StandingOffer());
 }
 }  // namespace assetmarket

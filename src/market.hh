@@ -22,6 +22,7 @@ class Market {
   [[nodiscard]] auto StandingAsk() const -> std::optional<Offer>;
   [[nodiscard]] auto PeekPotentialTrade() const -> std::optional<Trade>;
   [[nodiscard]] auto PopTrade() -> std::optional<Trade>;
+  auto GetOffer(unsigned int id) -> std::optional<Offer>;
   auto ProcessOffer(Offer offer) -> std::optional<Trade>;
   auto Retract(unsigned int id) -> void;
   auto clear() -> void;
@@ -31,5 +32,7 @@ class Market {
   OfferQueue bids_;
   OfferQueue asks_;
 };
+
+auto CanTrade(const Offer& bid, const Offer& ask) -> bool;
 }  // namespace assetmarket
 #endif  // MARKET_HH

@@ -1,25 +1,30 @@
 #ifndef OFFER_PROCESSOR_MARKET_HH
 #define OFFER_PROCESSOR_MARKET_HH
 
+#include "configuration.hh"
+#include "experiment_state.hh"
 #include "market.hh"
 #include "offer_processor.hh"
 #include "portfolio.hh"
 #include "subject.hh"
 
 namespace assetmarket {
-using PortfolioSet = std::unordered_map<SubjectID, Portfolio>;
 
 class OfferProcessorMarket : public OfferProcessor {
  public:
-  OfferProcessorMarket(Market market, std::shared_ptr<PortfolioSet>);
+  OfferProcessorMarket(std::shared_ptr<Market> market,
+                       std::shared_ptr<PortfolioSet>);
   virtual auto ProcessOffer(Offer offer) -> MarketSubmissionResult override;
   virtual auto ProcessCreate(SubjectID id) -> CreationResult override;
   virtual auto ProcessRetract(RetractRequest rr) -> RetractResult override;
 
  private:
-  Market market_;
+  std::shared_ptr<Market> market_;
   std::shared_ptr<PortfolioSet> folio_;
+  std::shared_ptr<ExperimentState> exp_state_;
+  Configuration config_;
   auto ProcessTrade(const std::optional<Trade>& trade) -> void;
+  unsigned int margin_ = 100;
 };
 }  // namespace assetmarket
 #endif  // OFFER_PROCESSOR_MARKET_HH

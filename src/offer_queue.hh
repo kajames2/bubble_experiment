@@ -26,6 +26,7 @@ class OfferQueue {
   std::vector<Offer> Offers(unsigned int player_id) const;
   void Retract(unsigned int id);
   std::optional<Offer> StandingOffer() const;
+  std::optional<Offer> GetOffer(unsigned int id);
 
  private:
   std::vector<Offer> offers_;

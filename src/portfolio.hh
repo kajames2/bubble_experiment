@@ -6,7 +6,10 @@
 #include <ostream>
 #include <unordered_map>
 
+#include "subject.hh"
+
 namespace assetmarket {
+
 class InvalidChangeByZero : std::exception {};
 
 enum class Item { Cash, Shares, Derivatives, Margin };
@@ -26,6 +29,8 @@ class Portfolio {
 
   std::unordered_map<Item, int> item_count_;
 };
+
+using PortfolioSet = std::unordered_map<SubjectID, Portfolio>;
 
 std::ostream& operator<<(std::ostream& os, const Portfolio& port);
 std::istream& operator>>(std::istream& os, Portfolio& port);

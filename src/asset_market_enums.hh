@@ -18,6 +18,7 @@ enum class MessageType {
 
   // Client & server can send
   DebugMessage,
+  SubjectConfiguration,
 
   // Server sends in reaction to clients
   AcceptedOffer,

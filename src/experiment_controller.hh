@@ -102,9 +102,9 @@ class ExperimentController {
   auto StartInstructions() -> void {
     exp_->StartInstructions();
     for (auto id : exp_->GetSubjectIDs()) {
-      bool is_creator = config_.GetSubjectConfiguration(id).is_creator;
-      serv_->Send(id, Message(MessageType::InstructionsStarted,
-                              std::to_string(is_creator)));
+      serv_->Send(id, Message(MessageType::SubjectConfiguration,
+                              to_string(config_.GetSubjectConfiguration(id))));
+      serv_->Send(id, Message(MessageType::InstructionsStarted));
     }
   }
 
@@ -136,6 +136,7 @@ class ExperimentController {
               read_res);
       res.warnings = warnings;
       exp_->SetConfiguration(config);
+      config_ = config;
     }
     std::cerr << PrettyPrint(res) << std::endl;
     serv_->SendAdmins(
