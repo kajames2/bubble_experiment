@@ -6,9 +6,14 @@
 #include "retract_request.hh"
 
 namespace assetmarket {
-OfferProcessorMarket::OfferProcessorMarket(std::shared_ptr<Market> market,
-                                           std::shared_ptr<PortfolioSet> port)
-    : market_(std::move(market)), folio_(port) {}
+OfferProcessorMarket::OfferProcessorMarket(
+    std::shared_ptr<Market> market, std::shared_ptr<PortfolioSet> port,
+    std::shared_ptr<ExperimentState> exp_state,
+    std::shared_ptr<Configuration> conf)
+    : market_(std::move(market)),
+      folio_(port),
+      exp_state_(exp_state),
+      config_(conf) {}
 
 auto OfferProcessorMarket::ProcessOffer(Offer offer) -> MarketSubmissionResult {
   if (!exp_state_->IsMarketOpen()) {
@@ -24,7 +29,7 @@ auto OfferProcessorMarket::ProcessOffer(Offer offer) -> MarketSubmissionResult {
     }
   }
 
-  if (config_.improvement_rule) {
+  if (config_->improvement_rule) {
     if (offer.price < 0) {
       auto best_ask = market_->StandingAsk();
       if (best_ask && best_ask >= offer) {
@@ -75,8 +80,8 @@ auto OfferProcessorMarket::ProcessCreate(SubjectID id) -> CreationResult {
   if (folio_->at(id).ItemCount(Item::Cash) < margin_) {
     return {CreationValidity::RejectedInsufficientCash, id};
   }
-  if (exp_state_->round < config_.first_create_round ||
-      !config_.GetSubjectConfiguration(id).is_creator) {
+  if (exp_state_->round < config_->first_create_round ||
+      !config_->GetSubjectConfiguration(id).is_creator) {
     return {CreationValidity::RejectedCannotCreate, id};
   }
   folio_->at(id).Add(Item::Derivatives, 1);

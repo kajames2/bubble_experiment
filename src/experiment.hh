@@ -1,6 +1,7 @@
 #ifndef EXPERIMENT_HH
 #define EXPERIMENT_HH
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,9 @@ namespace assetmarket {
 
 class Experiment : public ExperimentInterface {
  public:
-  Experiment(std::shared_ptr<ExperimentState> state) : exp_state_(state) {}
+  Experiment(std::shared_ptr<Configuration> config,
+             std::shared_ptr<ExperimentState> state)
+      : config_(config), exp_state_(state) {}
   auto NSubjects() const -> size_t { return subjects_.size(); }
   auto AddSubject(Subject p) -> SubjectID {
     SubjectID id = subjects_.size();
@@ -76,11 +79,11 @@ class Experiment : public ExperimentInterface {
   }
 
   auto SetConfiguration(const Configuration& config) -> void override {
-    config_ = config;
+    *config_ = config;
   }
 
  private:
-  Configuration config_;
+  std::shared_ptr<Configuration> config_;
   std::unordered_map<SubjectID, Subject> subjects_;
   std::shared_ptr<ExperimentState> exp_state_;
   // std::shared_ptr<MarketState> market_state_;

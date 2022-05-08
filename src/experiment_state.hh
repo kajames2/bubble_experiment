@@ -11,7 +11,7 @@ struct ExperimentState {
   Stage stage = Stage::PreExperiment;
 
   auto IsMarketOpen() const -> bool {
-    return status == Status::Running && stage == Stage::Round
+    return status == Status::Running && stage == Stage::Round;
   }
 };
 

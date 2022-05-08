@@ -13,7 +13,9 @@ namespace assetmarket {
 class OfferProcessorMarket : public OfferProcessor {
  public:
   OfferProcessorMarket(std::shared_ptr<Market> market,
-                       std::shared_ptr<PortfolioSet>);
+                       std::shared_ptr<PortfolioSet>,
+                       std::shared_ptr<ExperimentState>,
+                       std::shared_ptr<Configuration>);
   virtual auto ProcessOffer(Offer offer) -> MarketSubmissionResult override;
   virtual auto ProcessCreate(SubjectID id) -> CreationResult override;
   virtual auto ProcessRetract(RetractRequest rr) -> RetractResult override;
@@ -22,7 +24,7 @@ class OfferProcessorMarket : public OfferProcessor {
   std::shared_ptr<Market> market_;
   std::shared_ptr<PortfolioSet> folio_;
   std::shared_ptr<ExperimentState> exp_state_;
-  Configuration config_;
+  std::shared_ptr<Configuration> config_;
   auto ProcessTrade(const std::optional<Trade>& trade) -> void;
   unsigned int margin_ = 100;
 };
