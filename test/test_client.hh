@@ -5,9 +5,10 @@
 #include <chrono>
 #include <thread>
 
-#include "asio_connection.hh"
+#include "comms/asio_connection.hh"
+#include "communication_test_consts.hh"
 
-namespace assettest {
+namespace commstest {
 
 class TestClient {
  public:
@@ -24,8 +25,8 @@ class TestClient {
   bool error_code = false;
   asio::io_context context_;
   std::unique_ptr<std::thread> thd;
-  std::unique_ptr<assetmarket::AsioConnection> conn;
+  std::unique_ptr<exptemplate::comms::AsioConnection<TestMessage>> conn;
   asio::ip::tcp::resolver::results_type endpoints;
 };
-}  // namespace assettest
+}  // namespace commstest
 #endif  // TEST_CONNECTION_HH

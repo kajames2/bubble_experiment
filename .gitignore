@@ -55,3 +55,7 @@ lib/
 .cache/
 .ccls-cache/
 build/
+
+GTAGS
+GRTAGS
+GPATH

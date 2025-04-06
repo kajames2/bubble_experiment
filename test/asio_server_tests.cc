@@ -5,18 +5,21 @@
 #include <thread>
 #include <vector>
 
-#include "asio_server.hh"
+#include "comms/asio_server.hh"
+#include "comms/connection.hh"
 #include "communication_test_consts.hh"
-#include "connection.hh"
 #include "test_client.hh"
 
 using namespace ::testing;
-using namespace assetmarket;
-using namespace assettest;
+using namespace exptemplate;
+using namespace commstest;
+using namespace exptemplate::comms;
 
-class MockConnection : public Connection {
+class MockConnection : public Connection<TestMessage> {
  public:
-  auto Send(const assetmarket::Message&) -> void override { n_mess_ += 1; }
+  auto Send(const exptemplate::comms::Message<TestMessage>&) -> void override {
+    n_mess_ += 1;
+  }
 
   int n_mess_ = 0;
 };
@@ -24,9 +27,13 @@ auto MakeMockConnection() -> std::shared_ptr<MockConnection> {
   return std::make_shared<MockConnection>();
 }
 
-class MockProcessor : public ClientMessageProcessor {
+class MockProcessor : public ClientMessageProcessor<TestMessage> {
  public:
-  auto ProcessMessage(size_t, assetmarket::Message) -> void override {
+  auto ProcessClientMessage(ConnectionID id,
+                            comms::Message<TestMessage> message)
+      -> void override {}
+  auto ProcessMessage(size_t, exptemplate::comms::Message<TestMessage>)
+      -> void override {
     n_proc_ += 1;
   }
   int n_proc_ = 0;
@@ -34,52 +41,54 @@ class MockProcessor : public ClientMessageProcessor {
 
 class AnAsioServer : public Test {
  public:
-  AnAsioServer() : serv_(12345) { serv_.Start(); }
+  AnAsioServer() : context_(), serv_(context_, 12345) { serv_.Start(); }
   auto AddConnections(unsigned int n) {
     for (unsigned int i = 0; i < n; ++i) {
       serv_.AddConnection(TEST_CLIENTS[i]);
     }
   }
-  auto AddSubjects(unsigned int n) {
+  auto AddClients(unsigned int n) {
     for (unsigned int i = 0; i < n; ++i) {
-      serv_.AddSubject(i, {TEST_CLIENTS[i]});
+      serv_.AddClient(i, {i, "", TEST_CLIENTS[i]});
     }
   }
+  asio::io_context context_;
   std::vector<std::shared_ptr<MockConnection>> TEST_CLIENTS{
       MakeMockConnection(), MakeMockConnection(), MakeMockConnection(),
       MakeMockConnection(), MakeMockConnection()};
-  AsioServer serv_;
+  AsioServer<TestMessage> serv_;
 };
 
-TEST_F(AnAsioServer, CanSendMessagesToAddedSubjects) {
+TEST_F(AnAsioServer, CanSendMessagesToOneClient) {
   auto conn = MakeMockConnection();
   auto conn2 = MakeMockConnection();
-  ConnectionInfo info{conn};
-  ConnectionInfo info2{conn2};
-  serv_.AddSubject(2, info);
-  serv_.AddSubject(1, info2);
+  ConnectionInfo<TestMessage> info{0, "", conn};
+  ConnectionInfo<TestMessage> info2{0, "", conn2};
+  serv_.AddClient(2, info);
+  serv_.AddClient(1, info2);
   serv_.Send(2, TEST_MESSAGE);
   ASSERT_THAT(conn->n_mess_, Eq(1));
   ASSERT_THAT(conn2->n_mess_, Eq(0));
 }
 
-TEST_F(AnAsioServer, ThrowsIfSendingToInvalidSubject) {
-  ASSERT_ANY_THROW(serv_.Send(2, TEST_MESSAGE));
-  serv_.AddSubject(2, ConnectionInfo());
-  ASSERT_ANY_THROW(serv_.Send(0, TEST_MESSAGE));
+TEST_F(AnAsioServer, ThrowsIfSendingToInvalidClient) {
+  auto conn = MakeMockConnection();
+  ASSERT_THROW(serv_.Send(2, TEST_MESSAGE), comms::InvalidClientException);
+  serv_.AddClient(2, {0, "", conn});
+  ASSERT_THROW(serv_.Send(0, TEST_MESSAGE), comms::InvalidClientException);
 }
 
-TEST_F(AnAsioServer, HasNoSubjectsOnStart) {
-  ASSERT_THAT(serv_.SubjectCount(), Eq(0));
+TEST_F(AnAsioServer, HasNoClientsOnStart) {
+  ASSERT_THAT(serv_.ClientCount(), Eq(0));
 }
 
-TEST_F(AnAsioServer, SubjectsCountedTowardsConnections) {
-  AddSubjects(3);
-  ASSERT_THAT(serv_.SubjectCount(), Eq(3));
+TEST_F(AnAsioServer, ClientsCountedTowardsConnections) {
+  AddClients(3);
+  ASSERT_THAT(serv_.ClientCount(), Eq(3));
 }
 
-TEST_F(AnAsioServer, SendsMessagesToAllSubjects) {
-  AddSubjects(3);
+TEST_F(AnAsioServer, SendsMessagesToAllClients) {
+  AddClients(3);
   serv_.SendAll(TEST_MESSAGE);
   for (unsigned int i = 0; i < 3; ++i) {
     ASSERT_THAT(TEST_CLIENTS[i]->n_mess_, Eq(1));
@@ -87,7 +96,7 @@ TEST_F(AnAsioServer, SendsMessagesToAllSubjects) {
 }
 
 TEST_F(AnAsioServer, DoesNotSendToUnknownConnections) {
-  AddSubjects(3);
+  AddClients(3);
   serv_.AddConnection(TEST_CLIENTS[3]);
   serv_.SendAll(TEST_MESSAGE);
   for (unsigned int i = 0; i < 3; ++i) {
@@ -117,7 +126,7 @@ TEST_F(AnAsioServer, AllProcessorsSeeMessage) {
 
 TEST_F(AnAsioServer, CanStopAcceptingClients) {
   TestClient client;
-  serv_.StopAcceptingClients();
+  serv_.StopAcceptingConnections();
   auto finished = client.WaitForConnect();
   ASSERT_TRUE(finished);
   finished = client.WaitReceiveMessage();
@@ -138,4 +147,15 @@ TEST_F(AnAsioServer, AcceptsClients) {
   // ASSERT_TRUE(finished);
   // ASSERT_TRUE(client.received_message);
   serv_.Stop();
+}
+
+TEST_F(AnAsioServer, SendsMessagesToAdminClients) {
+  auto admin_conn = MakeMockConnection();
+  auto regular_conn = MakeMockConnection();
+  serv_.AddConnection(admin_conn);
+  serv_.AddConnection(regular_conn);
+  serv_.AddAdmin(0);
+  serv_.SendAdmins(TEST_MESSAGE);
+  ASSERT_THAT(admin_conn->n_mess_, Eq(1));
+  ASSERT_THAT(regular_conn->n_mess_, Eq(0));
 }

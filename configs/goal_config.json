@@ -1,0 +1,117 @@
+{
+    "n_players" : 2,
+    "n_rounds" : 5,
+    "role_assignments" : ["Laborer", "OwnerFood", "Laborer", "OwnerParts",
+                          "Laborer", "OwnerFood", "Laborer", "OwnerParts",
+                          "Laborer", "OwnerFood", "Laborer", "OwnerParts"],
+    "roles" :
+    [
+        {
+        "name" : "Laborer",
+        "e_per_dollar" : 100,
+        "instructions_filename" : "laborer"
+    },
+        {
+        "name" : "OwnerParts",
+        "e_per_dollar" : 100,
+        "instructions_filename" : "owner_parts"
+    },
+        {
+        "name" : "OwnerFood",
+        "e_per_dollar" : 100,
+        "instructions_filename" : "owner_food"
+    }
+    ],
+    "items" : ["Cash", "Labor", "Parts", "Food"],
+    "markets" : [
+        {
+        "name" : "MarketLabor",
+        "item" : "Labor",
+        "numeraire" : "Cash",
+        "sellers" : "Laborer",
+        "buyers" : ["OwnerParts", "OwnerFood"]
+    },
+        {
+        "name" : "MarketFood",
+        "item" : "Food",
+        "numeraire" : "Cash",
+        "sellers" : "OwnerFood",
+        "buyers" : ["OwnerParts", "OwnerFood", "Laborer"]
+    },
+        {
+        "name" : "MarketParts",
+        "item" : "Parts",
+        "numeraire" : "Cash",
+        "sellers" : ["OwnerParts", "OwnerFood"],
+        "buyers" : ["OwnerParts", "OwnerFood"],
+        "retradeable" : true,
+        "publicly_viewable" : false
+    }
+    ],
+    "phases" : [
+        {
+        "name" : "TradeLabor",
+        "length" : 180,
+        "markets" : "MarketLabor",
+        "item_changes" : [
+            {
+            "role" : "Laborer",
+            "Labor" : 10,
+            "Cash" : 0,
+            "Food" : 0
+        },
+            {
+            "role" : "OwnerFood",
+            "Labor" : 0,
+            "Cash" : 100,
+            "Food" : 0,
+            "Parts" : "if(Round==1) { 5 } else {Parts}"
+        },
+            {
+            "role" : "OwnerParts",
+            "Labor" : 0,
+            "Cash" : 100,
+            "Food" : 0,
+            "Parts" : "if(Round==1) { 5 } else {Parts}"
+        }
+        ]
+    },
+        {
+        "name" : "Production",
+        "length" : 10,
+        "item_changes" : [
+            {
+            "role" : "OwnerFood",
+            "Food" : "Parts*Labor",
+            "Parts" : "floor(0.5*Parts)"
+        },
+            {
+            "role" : "OwnerParts",
+            "Parts" : "floor(0.5*Parts + Parts*Labor)"
+        }
+        ]
+    },
+        {
+        "name" : "TradeGoods",
+        "length" : 180,
+        "markets" : ["MarketFood", "MarketParts"]
+    },
+        {
+        "name" : "Consumption",
+        "length" : 20,
+        "item_changes" : [
+            {
+            "role" : "Laborer",
+            "payoffs" : "Labor + Food*Cash"
+        },
+            {
+            "role" : "OwnerFood",
+            "payoffs" : "Food*Cash"
+        },
+            {
+            "role" : "OwnerParts",
+            "payoffs" : "Food*Cash"
+        }
+        ]
+    }]
+}

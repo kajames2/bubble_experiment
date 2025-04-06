@@ -1,0 +1,348 @@
+{% page Introduction %}
+{% header Welcome! %}
+
+{% hide ExperimentStatus %}
+{% hide CurrentAllocation %}
+{% hide BidInput %}
+{% hide BidSubmit %}
+{% hide BidQueue %}
+{% hide BidRetract %}
+{% hide AskInput %}
+{% hide AskSubmit %}
+{% hide AskQueue %}
+{% hide AskRetract %}
+{% hide Messages %}
+{% hide Creation %}
+{% hide Dividend %}
+{% hide Transactions %}
+{% hide TransactionsChart %}
+
+You are about to participate in an experiment.  The amount you earn will depend on both your decisions and the decisions of others in the experiment. Please read the instructions carefully and raise your hand if you have any questions.
+
+You should take as much time as you want to read the instructions and as much time as you need to understand them.
+
+
+
+{% page Overview %}
+{% header Overview %}
+
+In today's experiment you will participate in a series of {% n_periods %} trading periods. In each period, you and the other participants will buy and sell units.
+
+
+
+{% page Payment %}
+{% header Payment %}
+{% set epdtrunc = truncate(eperdollars, 1) %}
+
+Your earnings will be determined by the total Cash that you obtain during the experiment. This Cash will then be converted into US dollars at an exchange rate of $1 for every {% epdtrunc %} Cash.
+
+
+
+{% page Allocation %}
+{% header Current Allocation %}
+
+{% show CurrentAllocation %}
+
+{% set init_cash = 1500 %}
+{% set init_units = 2 %}
+{% event SetHoldings(init_cash, init_units) %}
+{% event SetStartPortfolio() %}
+
+The amount of 'Cash' that you are given at the start of the first Period appears in the 'Current Allocation' area on the upper left of your screen. For this example, your Cash is {% init_cash %}.
+
+We have also given you some Units to start with.  Your Units are shown in the Current Allocation box below Cash.  Currently you have {% init_units %} Units.
+
+Throughout the experiment, you can sell and buy Units from other participants.
+
+
+
+{% page Dividends %}
+{% header Dividends %}
+
+At the end of each period, we will pay you a random amount of Cash for each Unit you own.  This is called a 'Dividend' payment.  The random Cash payment will be either 0, 8, 28, or 60 with equal probability.  The payment is the same for all Units owned by all players in a period.  A new Cash payment is determined after each period.
+
+
+
+{% page Dividends2 %}
+{% set period=1 %}
+{% event SetRound(period) %}
+{% show Dividend %}
+
+The dividend information is always shown on your screen.  You can see the possible dividends each period (always 0, 8, 28, or 60) and the number of periods remaining.
+
+While the amount you will be paid for the Units is random, you can also see the average total dividend for each Unit between now and the end of the experiment.
+
+
+
+{% page Time %}
+{% header Time Details %}
+
+{% show ExperimentStatus %}
+
+In the experiment, each period will have 2 phases: A 'Trading Phase' that lasts {% period_length %} seconds, and a 'Review Phase' that lasts {% review_length %} seconds. The current phase of each period and the remaining time will be displayed on the upper right corner of the screen. There is an example for Period {% period %} on the upper right corner of the screen. Please check it now.
+
+
+
+{% page Bids %}
+{% header Bids %}
+
+{% show BidInput %}
+{% show BidSubmit %}
+{% show BidQueue %}
+
+During a Trading Phase, you can buy and sell Units for Cash.  To buy a unit, you can offer to buy one for a price.  This offer is called a 'Bid'.
+
+During the Trading Phase of each period, you can submit bids in the area above 'Submit Bid'. Please enter a Bid now. After you have entered your Bid, please either press the 'Return' key on the keyboard, or click the box labeled 'Submit Bid'.
+
+{% set bid_limit = 999 %}
+{% set max_first_bid = Subtract(bid_limit, 10) %}
+{% wait_for bid1 = UserSubmitBidBetween(1, max_first_bid) %}
+
+
+
+{% page MarketQueue %}
+{% header 'Market Queue' Display %}
+
+Your Bid appears in the box to the left of the 'Submit Bid' button. This table lists all Bids currently submitted by all traders. As you can see, you currently have the only Bid.
+
+To see how the screen display changes when another trader submits an improving Bid, click the 'Next' button.
+
+
+
+{% page BidImprovement %}
+{% header Bid Improvement %}
+
+{% set bid_overhead = Subtract(bid_limit, bid1) %}
+{% set max_increase = Subtract(bid_overhead, 5) %}
+{% set max_increase = Min(max_increase, 10) %}
+
+{% set lower_bid_limit = Add(bid1, 1) %}
+{% set upper_bid_limit = Add(bid1, max_increase) %}
+{% set other_trader_bid = RandomInt(lower_bid_limit, upper_bid_limit) %}
+{% event SubmitComputerBid(other_trader_bid) %}
+
+If there is at least one Bid in the Market Queue, any new Bid must be GREATER than the current highest Bid in the list (currently {% other_trader_bid %}). As you can see, some other trader has submitted a Bid of {% other_trader_bid %} that is higher than your Bid. Your Bid is displayed in the Market Queue bolded and colored Blue.  All other bids are unbolded and colored Black.
+
+Another trader now holds the highest Bid. If you submit a Bid that is higher than the current high Bid, then your new Bid will replace your previous Bid.
+
+
+
+{% page BidImprovement2 %}
+
+Please submit a new Bid now.
+
+{% set min_bid = Add(other_trader_bid, 1) %}
+{% wait_for replaced_bid UserSubmitBidBetween(min_bid, 998) %}
+
+
+
+{% page Messages %}
+{% header Messages Display %}
+
+{% show Messages %}
+
+The 'Messages' display at the very bottom of your screen provides temporary feedback whenever you submit a Bid, make a trade, or the period ends or begins.
+
+
+
+{% page Messages2 %}
+
+As you can see in the Bid Queue, your previous Bid of {% bid1 %} has now been replaced by the Bid you just submitted, {% replaced_bid %}. Your Cash has not yet changed, since no trade has been completed. So far, you have only offered to buy a unit for {% replaced_bid %} Cash. 
+
+
+
+{% page RetractBid %}
+{% header Retract Bid %}
+
+{% show BidRetract %}
+
+You have the option to delete a Bid you have previously submitted. To do this you need to click the Bid as it appears in the Bid Queue. Once your bid is selected, click the 'Retract Bid' button. Please delete your Bid now. 
+
+{% wait_for UserRetract() %}
+
+
+
+{% page RetractBid2 %}
+
+Please note that your Bid has been deleted from the Bid Queue display.
+
+
+
+{% page RetractBid3 %}
+
+Please submit a Bid that is greater than the current highest Bid in the market.
+
+{% wait_for new_bid1 UserSubmitBidBetween(min_bid, 998) %}
+
+
+
+{% page Messages3 %}
+
+The Messages display indicates that your Bid has been successfully submitted to the market. You can also see your Bid of {% new_bid1 %} is in the Bid Queue.
+
+
+
+{% page Trade %}
+{% header Trade %}
+
+{% show AskQueue %}
+{% set highest_bid = new_bid1 %}
+
+A trade occurs when either (1) a trader submits a Bid that is equal to or greater than some trader's Ask, or (2) a trader submits an Ask that is equal to or lower than some trader's Bid.
+
+An 'Ask' is the price at which a trader wants to sell one unit.  Asks are displayed in the Ask Queue directly above the Bid Queue.
+
+In our example, a trader who wants to sell a unit needs to submit an Ask that is equal to or lower than {% highest_bid %} in order to immediately sell a unit. Let's assume that a trader submits an Ask less than your Bid, which is {% highest_bid %}.
+
+
+
+{% page Trade2 %}
+
+{% show Transactions %}
+{% show TransactionsChart %}
+{% event SubmitComputerAsk(highest_bid) %}
+
+The highest Bid was yours, at {% highest_bid %}. You bought a unit at this price from the trader who submitted an Ask less than your Bid. The Transactions History table on the right shows the results of this trade.  The Current Allocation area also updates: your Units increase by one unit, and your Cash decreases by {% highest_bid %}.
+
+Your Bid of {% highest_bid %} has now been removed from the Bid Queue. The 'Market Transaction Prices' graph, which plots the prices of all Units traded in the current period, also changed: it shows a trade for one unit at a price equal to {% highest_bid %}. These changes to the graph and Bid Queue are displayed to all traders.
+
+
+
+{% page Trade3 %}
+
+When a trader submits a Bid that is equal to or greater than some trader's Ask, a trade occurs at a price equal to the trader's Ask. When a trader submits an Ask that is less than or equal to a trader's Bid, a trade occurs at a price that is equal to the trader's Bid.
+
+Click 'Next' to see a trader make an Ask that generates a trade with the other trader's Bid.
+
+
+
+{% page Trade4 %}
+{% event SubmitComputerAsk(other_trader_bid) %}
+
+As you can see an Ask which was less than the other trader's Bid of {% other_trader_bid %}, was submitted, resulting in a trade.
+
+You can see the changes in Bid Queue and the Market Transaction Prices graph. The other trader's Bid has been removed from the Bid Queue as it has made a trade. This trade has been shown in the Market Transaction Prices graph at price of {% other_trader_bid %}.
+
+We will show one more Ask submitted by some trader. Press 'Next' to see this Ask.
+
+
+
+{% page Trade5 %}
+
+{% set other_trader_ask = RandomInt(bid1, new_bid1) %}
+{% event SubmitComputerAsk(other_trader_ask) %}
+
+As you can see, the new Ask of {% other_trader_ask %} from some trader appears in the Ask Queue.
+
+The price is equal to the Ask if you accept a trader's Ask, and it will be equal to your Bid if a trader accepts your Bid. So, if you Bid an amount greater than or equal to the lowest Ask, you will trade at a price equal to the lowest Ask. Any Bid higher than or equal to the current lowest Ask (in this case {% other_trader_ask %}) will generate a trade.
+
+
+
+{% page Trade6 %}
+{% set min_bid = Add(other_trader_ask, 1) %}
+
+In order for you to see how the price is determined when you place a Bid greater than the lowest Ask, please submit a Bid higher than the lowest Ask (which is {% other_trader_ask %}).
+
+
+{% wait_for bid2 = UserSubmitBidBetween(min_bid, 999) %}
+
+
+
+{% page Trade7 %}
+
+You have made a trade with the trader whose Ask was {% other_trader_ask %}. The Transactions History table has updated: you have made a trade as a result of your Bid of {% bid2 %}, at a price equal to {% other_trader_ask %}, which was the Ask submitted by the trader. The Current Allocation area also updates: your Units increase by one unit, and your Cash decreases by {% other_trader_ask %}.
+
+The Ask equal to {% other_trader_ask %} has now been removed from the Ask Queue. Moreover, the Messages display informs you that you have made a trade. The Market Transaction Prices graph also changed. It shows three trades: first at a price equal to {% highest_bid %}, second at {% other_trader_bid %}, and the last at a price equal to {% other_trader_ask %}.
+
+
+
+{% page Sell1 %}
+{% header Selling Units %}
+{% show AskInput %}
+{% show AskSubmit %}
+{% show AskRetract %}
+
+To see how things work from the side of selling, please submit an Ask.
+
+{% wait_for ask1 = UserSubmitAskBetween(1, 999) %}
+
+
+
+{% page Sell2 %}
+{% event SubmitComputerBid(ask1) %}
+
+You have sold a Unit for {% ask1 %} Cash.  You can see it in the Your Transactions History table.
+
+
+
+
+{% page PeriodProfit %}
+{% header Period Results Window %}
+{% show ReviewDialog %}
+{% set div_index = RandomInt(0, 3) %}
+{% event SetEndPortfolio() %}
+{% event PayDividend(div_index) %}
+
+
+At the end of the Trading Phase of each period the 'Period Results' window pops up automatically. This window displays the dividend chosen for this period, how your Cash and Units have changed during trading, and your final Cash and Units after the dividends were paid. This window disappears automatically whenever a new period starts.
+
+
+
+{% page Create1 %}
+{% header Creating Units %}
+{% hide ReviewDialog %}
+{% show Creation %}
+{% disable Creation %}
+
+At some point in the experiment, you may be allowed to create new Units.  These Created Units can be bought and sold like your starting Units.  Created Units pay the same dividends as starting Units.
+
+When you create a Unit, you can sell the Unit into the market, and you assume the obligation to pay the same dividend that other Units receive for the remaining periods. (If your sale price exceeds the expected dividend for the remaining periods, Unit Creation and sale has a positive expected earning.)
+
+The Unit Creation area is at the top of your screen.  It will only be enabled if you are allowed to create Units.
+
+
+
+{% page Create2 %}
+{% event SetCanCreate() %}
+{% set req = 200 %}
+{% event SetMarginReq(req) %}
+{% event SetStartPortfolio() %}
+{% enable Creation %}
+
+Unit Creation is now enabled.  First notice that there is a Required Withholding box.  Because you are responsible for paying the dividends for your Created Units, some of your Cash (current {% req %}) will be transferred from your Cash into a Cash Withheld account.  The cash in this account will be used to pay future dividends.  At the end of the experiment, any excess (or shortage) of funds will be added to (or subtracted from) your final payout.
+
+
+
+{% page Create3 %}
+
+Please create a unit by clicking 'Create'. Keep an eye on your Cash and Units as you do.
+
+{% wait_for UserCreate() %}
+
+
+
+{% page Create4 %}
+{% event SetEndPortfolio() %}
+{% set prev_units = Subtract(units, 1) %}
+
+When creating a unit, {% req %} of your Cash was placed into the Withholding account.  Go to the next page to see what happens at the end of a period when a dividend is paid.
+
+
+{% page ReviewCreation %}
+{% show ReviewDialog %}
+{% set div_index2 = RandomInt(1, 3) %}
+{% event PayDividend(div_index2) %}
+{% event div = GetDividend() %}
+{% event units = GetUnits() %}
+{% set tot_div = Multiply(div, units) %}
+
+The dividend was {% div %}.  You had {% units %} units ({% prev_units%} from before, plus your 1 Created Unit).  So in total, you received {% tot_div %} Cash from the dividends ({% div %} Cash x {% units %} Units).  Since you have 1 Created Unit, you paid {% div %} Cash from your Cash Withheld account.  In this case, since you still have your Created Unit, you ended up paying yourself.  If you had sold your Created Unit though, the Cash Withheld would have been paid to whoever owned your Created Unit.
+
+
+
+{% page Conclusion %}
+{% hide ReviewDialog %}
+
+Caution: The Bids and Asks by other traders in the examples above were generated randomly for illustration purposes. The examples are intended to convey the rules of the market, but NOT intended to suggest how you should make your decisions. 
+
+When you are finished going over the instructions please raise your hand if you would like further explanation. This is the proper time to ask any questions you might have. Otherwise, if you feel that you understand the instructions, please click the 'Ready' button and wait while the other participants complete the instructions. We will start the experiment once everyone has clicked the 'Ready' button. 

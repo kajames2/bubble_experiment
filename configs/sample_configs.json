@@ -1,0 +1,45 @@
+{
+  "n_players" : 2,
+  "n_rounds" : 5,
+  "round_seconds" : 60,
+  "review_seconds" : 30,
+  "replace_offer_rule" : true,
+  "improvement_rule" : true,
+  "first_create_round" : 2,
+  "dividends" : [0, 8, 28, 60],
+  "dividend_realizations" : [3,3,3,1,0,1,0,0,3,2,1,2,0,0,3],
+  "margin_requirements" : [360, 336, 312, 288, 264, 240, 216, 192, 168, 144, 120, 96, 72, 48, 24],
+  "max_margins" : [900, 840, 780, 720, 660, 600, 540, 480, 420, 360, 300, 240, 180, 120, 60],
+
+  "role_assignments" : ["T1","T2","T3","T1","T2","T3","T1","T2","T3","T1","T2","T3"],
+  "roles" :
+  [
+	  {
+	    "name" : "T1",
+	    "player_type" : "Trader",
+	    "e_per_dollar" : 100,
+	    "instructions_filename" : "create_trader",
+		  "init_cash" : 1080,
+		  "init_units" : 1,
+      "is_creator" : true
+	  },
+    {
+	    "name" : "T2",
+	    "player_type" : "Trader",
+	    "e_per_dollar" : 100,
+	    "instructions_filename" : "no_create_trader",
+		  "init_cash" : 720,
+		  "init_units" : 2,
+      "is_creator" : false
+	  },
+    {
+	    "name" : "T3",
+	    "player_type" : "Trader",
+	    "e_per_dollar" : 100,
+	    "instructions_filename" : "no_create_trader",
+		  "init_cash" : 360,
+		  "init_units" : 3,
+      "is_creator" : false
+	  }
+  ]
+}
