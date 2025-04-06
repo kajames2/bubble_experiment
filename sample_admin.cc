@@ -13,10 +13,17 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    auto admin = std::make_shared<AsioClient>();
-    auto cont = std::make_shared<AdminsideController>(admin);
+    asio::io_context context;
+    auto admin = std::make_shared<AsioClient>(context);
+    auto state = std::make_shared<AdminState>();
+    auto timer = std::make_shared<PausableTimer>(context);
+    state->timer = timer;
+    auto admin_proc = std::make_unique<AdminsideProcessor>(state);
+    auto cont =
+        std::make_shared<AdminsideController>(admin, std::move(admin_proc));
     admin->AddProcessor(cont);
     bool connected_to_server = admin->Connect(argv[1], 12345);
+    std::thread m_threadContext = std::thread([&context]() { context.run(); });
 
     while (connected_to_server) {
       std::string command;
@@ -34,6 +41,8 @@ int main(int argc, char* argv[]) {
       }
     }
     admin->Disconnect();
+    context.stop();
+    if (m_threadContext.joinable()) m_threadContext.join();
   } catch (std::exception& e) {
     std::cerr << "Exception: " << e.what() << "\n";
   }

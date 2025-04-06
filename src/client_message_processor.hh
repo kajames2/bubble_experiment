@@ -1,25 +1,22 @@
 #ifndef CLIENT_MESSAGE_PROCESSOR_HH
 #define CLIENT_MESSAGE_PROCESSOR_HH
 
-#include "connection.hh"
-#include "connection_info.hh"
-#include "message.hh"
+#include "comms/connection.hh"
+#include "comms/message.hh"
 #include "subject.hh"
 
-namespace assetmarket {
+namespace exptemplate {
 
-struct ClientMessage {
-  ConnectionInfo& client;
-  Message message;
-};
-
+template <typename T>
 class ClientMessageProcessor {
  public:
-  virtual auto ProcessSubjectMessage(SubjectID id, Message message) -> void = 0;
-  virtual auto ProcessMessage(size_t conn_id, Message message) -> void = 0;
+  virtual auto ProcessClientMessage(SubjectID id, comms::Message<T> message)
+      -> void = 0;
+  virtual auto ProcessMessage(size_t conn_id, comms::Message<T> message)
+      -> void = 0;
   virtual ~ClientMessageProcessor() {}
 };
 
-}  // namespace assetmarket
+}  // namespace exptemplate
 
 #endif  // CLIENT_MESSAGE_PROCESSOR_HH

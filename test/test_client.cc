@@ -5,17 +5,18 @@
 #include <string>
 #include <thread>
 
-#include "asio_connection.hh"
+#include "comms/asio_connection.hh"
 
 using namespace std::chrono_literals;
-using namespace assetmarket;
-using namespace assettest;
+using namespace exptemplate;
+using namespace exptemplate::comms;
+using namespace commstest;
 
 TestClient::TestClient() : context_() {
   asio::ip::tcp::socket sock(context_);
-  conn = std::make_unique<AsioConnection>(
+  conn = std::make_unique<AsioConnection<TestMessage>>(
       context_, std::move(sock),
-      [this](assetmarket::Message mess) {
+      [this](Message<TestMessage> mess) {
         received_message = true;
         v.notify_all();
       },

@@ -2,12 +2,13 @@
 #include <string>
 
 #include "asio_server.hh"
+#include "client_message_processor.hh"
 #include "connection_controller.hh"
 #include "experiment.hh"
+#include "experiment_command_processor.hh"
 #include "market.hh"
 #include "message_director.hh"
 #include "offer_processor_market.hh"
-#include "src/client_message_processor.hh"
 
 using namespace assetmarket;
 
@@ -38,10 +39,14 @@ int main(int argc, char **argv) {
   auto exp = std::make_shared<Experiment>(config, exp_state);
   auto timer = std::make_shared<PausableTimer>(context);
   auto set = std::make_shared<PortfolioSet>();
+  auto asset_proc = std::make_unique<PeriodAssetProcessor>(market, set);
+  auto exp_proc = std::make_unique<ExperimentCommandProcessor>(
+      config, exp, timer, std::move(asset_proc));
   auto offer_proc =
       std::make_unique<OfferProcessorMarket>(market, set, exp_state, config);
   auto conn_cont = std::make_shared<ConnectionController>(server, exp);
-  auto exp_cont = std::make_shared<ExperimentController>(server, exp, timer);
+  auto exp_cont =
+      std::make_shared<ExperimentController>(server, std::move(exp_proc));
   auto client_cont =
       std::make_shared<ClientController>(std::move(offer_proc), server, timer);
   auto director =
